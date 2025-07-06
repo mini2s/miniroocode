@@ -8,6 +8,7 @@ import { codebaseIndexProviderSchema } from "./codebase-index.js"
  */
 
 export const providerNames = [
+	"zgsm",
 	"anthropic",
 	"claude-code",
 	"glama",
@@ -54,6 +55,13 @@ export type ProviderSettingsEntry = z.infer<typeof providerSettingsEntrySchema>
  */
 
 const baseProviderSettingsSchema = z.object({
+	// zgsm
+	zgsmAccessToken: z.string().optional(),
+	zgsmRefreshToken: z.string().optional(),
+	zgsmState: z.string().optional(),
+	zgsmBaseUrl: z.string().optional(),
+
+	//
 	includeMaxTokens: z.boolean().optional(),
 	diffEnabled: z.boolean().optional(),
 	fuzzyMatchThreshold: z.number().optional(),
@@ -70,6 +78,14 @@ const baseProviderSettingsSchema = z.object({
 // Several of the providers share common model config properties.
 const apiModelIdProviderModelSchema = baseProviderSettingsSchema.extend({
 	apiModelId: z.string().optional(),
+})
+
+const zgsmSchema = apiModelIdProviderModelSchema.extend({
+	zgsmAccessToken: z.string().optional(),
+	zgsmRefreshToken: z.string().optional(),
+	zgsmState: z.string().optional(),
+	zgsmBaseUrl: z.string().optional(),
+	zgsmModelId: z.string().optional(),
 })
 
 const anthropicSchema = apiModelIdProviderModelSchema.extend({
@@ -218,6 +234,7 @@ const defaultSchema = z.object({
 })
 
 export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProvider", [
+	zgsmSchema.merge(z.object({ apiProvider: z.literal("zgsm") })),
 	anthropicSchema.merge(z.object({ apiProvider: z.literal("anthropic") })),
 	claudeCodeSchema.merge(z.object({ apiProvider: z.literal("claude-code") })),
 	glamaSchema.merge(z.object({ apiProvider: z.literal("glama") })),
@@ -246,6 +263,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 
 export const providerSettingsSchema = z.object({
 	apiProvider: providerNamesSchema.optional(),
+	...zgsmSchema.shape,
 	...anthropicSchema.shape,
 	...claudeCodeSchema.shape,
 	...glamaSchema.shape,
@@ -280,6 +298,7 @@ export const MODEL_ID_KEYS: Partial<keyof ProviderSettings>[] = [
 	"glamaModelId",
 	"openRouterModelId",
 	"openAiModelId",
+	"zgsmModelId",
 	"ollamaModelId",
 	"lmStudioModelId",
 	"lmStudioDraftModelId",

@@ -54,6 +54,7 @@ import {
 	Vertex,
 	VSCodeLM,
 	XAI,
+	ZgsmAI,
 } from "./providers"
 
 import { MODELS_BY_PROVIDER, PROVIDERS } from "./constants"
@@ -150,7 +151,20 @@ const ApiOptions = ({
 	// stops typing.
 	useDebounce(
 		() => {
-			if (selectedProvider === "openai") {
+			if (selectedProvider === "zgsm") {
+				// Use our custom headers state to build the headers object.
+				const headerObject = convertHeadersToObject(customHeaders)
+
+				vscode.postMessage({
+					type: "requestZgsmModels",
+					values: {
+						baseUrl: apiConfiguration?.openAiBaseUrl,
+						apiKey: apiConfiguration?.openAiApiKey,
+						customHeaders: {}, // Reserved for any additional headers
+						openAiHeaders: headerObject,
+					},
+				})
+			} else if (selectedProvider === "openai") {
 				// Use our custom headers state to build the headers object.
 				const headerObject = convertHeadersToObject(customHeaders)
 
@@ -336,7 +350,14 @@ const ApiOptions = ({
 			</div>
 
 			{errorMessage && <ApiErrorMessage errorMessage={errorMessage} />}
-
+			{selectedProvider === "zgsm" && (
+				<ZgsmAI
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+				/>
+			)}
 			{selectedProvider === "openrouter" && (
 				<OpenRouter
 					apiConfiguration={apiConfiguration}

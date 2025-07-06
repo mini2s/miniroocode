@@ -175,6 +175,13 @@ export interface WebviewMessage {
 		| "marketplaceInstallResult"
 		| "fetchMarketplaceData"
 		| "switchTab"
+		// zgsm
+		| "zgsmDeleteProfile"
+		| "zgsmLogin"
+		| "zgsmLogout"
+		| "zgsmAbort"
+		| "requestZgsmModels"
+		// zgsm
 		| "profileThresholds"
 		| "shareTaskSuccess"
 		| "exportMode"

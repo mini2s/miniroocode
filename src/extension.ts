@@ -30,6 +30,7 @@ import { MdmService } from "./services/mdm/MdmService"
 import { migrateSettings } from "./utils/migrateSettings"
 import { autoImportSettings } from "./utils/autoImportSettings"
 import { API } from "./extension/api"
+import { AuthCommands, ZgsmAuthService } from "./core/auth/index"
 
 import {
 	handleUri,
@@ -50,6 +51,7 @@ import { initializeI18n } from "./i18n"
 
 let outputChannel: vscode.OutputChannel
 let extensionContext: vscode.ExtensionContext
+let authCommands: AuthCommands
 
 // This method is called when your extension is activated.
 // Your extension is activated the very first time the command is executed.
@@ -208,6 +210,8 @@ export async function activate(context: vscode.ExtensionContext) {
 		})
 	}
 
+	zgsmInitialize(context, provider)
+
 	return new API(outputChannel, provider, socketPath, enableLogging)
 }
 
@@ -217,4 +221,45 @@ export async function deactivate() {
 	await McpServerManager.cleanup(extensionContext)
 	TelemetryService.instance.shutdown()
 	TerminalRegistry.cleanup()
+
+	// 清理认证服务
+	if (authCommands) {
+		authCommands.dispose()
+	}
+}
+
+async function zgsmInitialize(context: vscode.ExtensionContext, provider: ClineProvider) {
+	//  🔑 关键：初始化认证服务单例，插件启动时检查登录状态
+	AuthCommands.initialize(provider)
+	authCommands = AuthCommands.getInstance()
+	authCommands.registerCommands(context)
+
+	/**
+	 * 插件启动时检查登录状态
+	 */
+	try {
+		ZgsmAuthService.initialize(provider)
+		const isLoggedIn = await ZgsmAuthService.getInstance().checkLoginStatusOnStartup()
+
+		if (isLoggedIn) {
+			provider.log("插件启动时检测到登录状态：有效")
+			ZgsmAuthService.getInstance()
+				.getTokens()
+				.then((tokens) => {
+					if (!tokens) {
+						return
+					}
+					ZgsmAuthService.getInstance().startTokenRefresh(
+						tokens.refresh_token,
+						vscode.env.machineId,
+						tokens.state,
+					)
+				})
+			// 开始token刷新定时器
+		} else {
+			provider.log("插件启动时检测到登录状态：无效")
+		}
+	} catch (error) {
+		provider.log("启动时检查登录状态失败: " + error.message)
+	}
 }

@@ -100,8 +100,8 @@ vi.mock("../../../components/common/Tab", () => ({
 	},
 }))
 
-vi.mock("@/components/ui", () => ({
-	...vi.importActual("@/components/ui"),
+vi.mock("@/components/ui", async (importOriginal) => ({
+	...(await importOriginal()),
 	Slider: ({ value, onValueChange, "data-testid": dataTestId }: any) => (
 		<input
 			type="range"

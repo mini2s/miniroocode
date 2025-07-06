@@ -20,6 +20,7 @@ import ModesView from "./components/modes/ModesView"
 import { HumanRelayDialog } from "./components/human-relay/HumanRelayDialog"
 import { AccountView } from "./components/account/AccountView"
 import { useAddNonInteractiveClickListener } from "./components/ui/hooks/useNonInteractiveClick"
+import { LoginButton } from "./components/LoginButton"
 import { TooltipProvider } from "./components/ui/tooltip"
 import { STANDARD_TOOLTIP_DELAY } from "./components/ui/standard-tooltip"
 
@@ -172,6 +173,9 @@ const App = () => {
 		<WelcomeView />
 	) : (
 		<>
+			<div style={{ position: "absolute", top: "1rem", right: "10rem", zIndex: 100 }}>
+				<LoginButton />
+			</div>
 			{tab === "modes" && <ModesView onDone={() => switchTab("chat")} />}
 			{tab === "mcp" && <McpView onDone={() => switchTab("chat")} />}
 			{tab === "history" && <HistoryView onDone={() => switchTab("chat")} />}

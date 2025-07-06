@@ -5,7 +5,7 @@ out-*
 node_modules
 coverage/
 mock/
-
+.history
 .DS_Store
 
 # IDEs

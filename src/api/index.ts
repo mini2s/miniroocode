@@ -28,6 +28,7 @@ import {
 	ChutesHandler,
 	LiteLLMHandler,
 	ClaudeCodeHandler,
+	ZgsmAiHandler,
 } from "./providers"
 
 export interface SingleCompletionHandler {
@@ -63,6 +64,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 	const { apiProvider, ...options } = configuration
 
 	switch (apiProvider) {
+		case "zgsm":
+			return new ZgsmAiHandler(options)
 		case "anthropic":
 			return new AnthropicHandler(options)
 		case "claude-code":
