@@ -68,6 +68,7 @@ import { webviewMessageHandler } from "./webviewMessageHandler"
 import { WebviewMessage } from "../../shared/WebviewMessage"
 import { EMBEDDING_MODEL_PROFILES } from "../../shared/embeddingModels"
 import { ProfileValidator } from "../../shared/ProfileValidator"
+import { AuthCommands } from "../auth"
 import { getWorkspaceGitInfo } from "../../utils/git"
 
 /**
@@ -107,6 +108,7 @@ export class ClineProvider
 	protected mcpHub?: McpHub // Change from private to protected
 	private marketplaceManager: MarketplaceManager
 	private mdmService?: MdmService
+	private authCommands: AuthCommands
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
@@ -157,6 +159,10 @@ export class ClineProvider
 			})
 
 		this.marketplaceManager = new MarketplaceManager(this.context)
+
+		// 初始化并获取 AuthCommands 单例
+		AuthCommands.initialize(this)
+		this.authCommands = AuthCommands.getInstance()
 	}
 
 	// Adds a new Cline instance to clineStack, marking the start of a new task.
@@ -1472,7 +1478,7 @@ export class ClineProvider
 			mcpEnabled: mcpEnabled ?? true,
 			enableMcpServerCreation: enableMcpServerCreation ?? true,
 			alwaysApproveResubmit: alwaysApproveResubmit ?? false,
-			requestDelaySeconds: requestDelaySeconds ?? 10,
+			requestDelaySeconds: Math.max(5, requestDelaySeconds ?? 10),
 			currentApiConfigName: currentApiConfigName ?? "default",
 			listApiConfigMeta: listApiConfigMeta ?? [],
 			pinnedApiConfigs: pinnedApiConfigs ?? {},
@@ -1826,5 +1832,9 @@ export class ClineProvider
 			cloudIsAuthenticated,
 			...gitInfo,
 		}
+	}
+
+	public getAuthCommands(): AuthCommands {
+		return this.authCommands
 	}
 }

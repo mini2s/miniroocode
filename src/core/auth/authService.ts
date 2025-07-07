@@ -2,11 +2,11 @@ import * as vscode from "vscode"
 import { AuthStorage } from "./authStorage"
 import { AuthApi } from "./authApi"
 import { AuthConfig } from "./authConfig"
-import type { ProviderSettings, LoginState, AuthTokens } from "@roo-code/types"
+import type { ProviderSettings } from "@roo-code/types"
 import type { ClineProvider } from "../webview/ClineProvider"
 import { getParams, retryWrapper } from "../../utils/zgsmUtils"
 import { joinUrl } from "../../utils/joinUrl"
-import { AuthStatus } from "./types"
+import { AuthStatus, AuthTokens, LoginState } from "./types"
 
 export class ZgsmAuthService {
 	private static instance: ZgsmAuthService
@@ -82,22 +82,6 @@ export class ZgsmAuthService {
 		}
 	}
 
-	// 异步处理URI回调登录（即将废弃）
-	async handleUriCallbackLogin(code: string, state: string) {
-		// try {
-		// 	const { tokens } = await retryWrapper("handleUriCallbackLogin", () => this.api.getAccessToken(code, state))
-		// 	if (!tokens) {
-		// 		throw new Error("获取token失败")
-		// 	}
-		// 	await this.storage.saveTokens({
-		// 		access_token: tokens.access_token,
-		// 		refresh_token: tokens.refresh_token,
-		// 		state,
-		// 	})
-		// } catch (error) {
-		// 	console.error("处理URI回调登录失败:", error)
-		// }
-	}
 	/**
 	 * 启动登录流程
 	 */
@@ -140,7 +124,7 @@ export class ZgsmAuthService {
 		let attempt = 0
 		const pollLoginState = async () => {
 			try {
-				const response = await retryWrapper(
+				const { data, success } = await retryWrapper(
 					"pollLoginState",
 					() => this.api.getUserLoginState(loginState.state, loginState.access_token),
 					undefined,
@@ -148,10 +132,10 @@ export class ZgsmAuthService {
 				)
 
 				if (
-					response.success &&
-					response.data?.state &&
-					response.data.state === this.loginStateTmp?.state &&
-					response.data?.status === AuthStatus.LOGGED_IN
+					success &&
+					data?.state &&
+					data.state === this.loginStateTmp?.state &&
+					data?.status === AuthStatus.LOGGED_IN
 				) {
 					// 登录成功，保存token
 					await this.storage.saveTokens(loginState)
@@ -161,7 +145,11 @@ export class ZgsmAuthService {
 					this.stopWaitLoginPolling()
 
 					// 开始token刷新定时器
-					this.startTokenRefresh(loginState.refresh_token, loginState.machineId, loginState.state)
+					this.startTokenRefresh(
+						loginState.refresh_token,
+						loginState.machineId || vscode.env.machineId,
+						loginState.state,
+					)
 
 					vscode.window.showInformationMessage("登录成功！")
 
@@ -227,28 +215,28 @@ export class ZgsmAuthService {
 	 */
 	async refreshToken(refreshToken: string, machineId: string, state: string, auto = true): Promise<AuthTokens> {
 		try {
-			const response = await retryWrapper("refreshToken", () =>
+			const { success, data, message } = await retryWrapper("refreshToken", () =>
 				this.api.getRefreshUserToken(refreshToken, machineId, state),
 			)
 
 			if (
-				response.success &&
-				response.data &&
-				response.data.access_token &&
-				response.data.refresh_token &&
-				this.loginStateTmp?.state === response.data.state
+				success &&
+				data &&
+				data.access_token &&
+				data.refresh_token &&
+				this.loginStateTmp?.state === data.state
 			) {
 				// 更新保存的token
-				await this.storage.saveTokens(response.data)
+				await this.storage.saveTokens(data)
 
 				// 更新刷新定时器
 				if (auto) {
-					this.startTokenRefresh(response.data.refresh_token, machineId, state)
+					this.startTokenRefresh(data.refresh_token, machineId, state)
 				}
 
-				return response.data
+				return data
 			} else {
-				throw new Error(`[${state}]` + (response.error || "刷新token失败"))
+				throw new Error(`[${state}]` + (message || "刷新token失败"))
 			}
 		} catch (error) {
 			console.error(`[${state}] 刷新token失败`, error)
@@ -343,21 +331,6 @@ export class ZgsmAuthService {
 		const params = getParams(loginState.state, [])
 
 		return `${joinUrl(baseUrl, [this.api.loginUrl])}?${params.map((p) => p.join("=")).join("&")}`
-
-		// // 老的登陆逻辑
-		// const scopes = ["openid", "profile", "email"]
-
-		// const params = [
-		// 	["response_type", "code"],
-		// 	["client_id", this.config.getClientId()],
-		// 	["redirect_uri", `${baseUrl}${this.config.getRedirectUri()}`],
-		// 	["state", loginState.state],
-		// 	["scope", scopes.join(" ")],
-		// ]
-		// const searchParams = new URLSearchParams(params)
-
-		// // return `${baseUrl}/realms/gw/protocol/openid-connect/auth?${searchParams.toString()}`
-		// return `${baseUrl}/realms/gw/protocol/openid-connect/auth?state=${loginState.state}&machineId=${loginState.machineId}`;
 	}
 
 	/**

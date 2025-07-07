@@ -2062,5 +2062,17 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
+		case "zgsmLogin": {
+			provider.getAuthCommands()?.handleLogin()
+			break
+		}
+		case "zgsmLogout": {
+			provider.getAuthCommands()?.handleLogout()
+			break
+		}
+		case "zgsmAbort": {
+			await provider.cancelTask()
+			break
+		}
 	}
 }

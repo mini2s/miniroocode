@@ -7,16 +7,6 @@ import type { ClineMessage, TokenUsage } from "./message.js"
 import type { ToolUsage, ToolName } from "./tool.js"
 import type { IpcMessage, IpcServerEvents, IsSubtask } from "./ipc.js"
 
-export interface LoginState {
-	state: string
-	machineId: string
-}
-
-export interface AuthTokens {
-	access_token: string
-	refresh_token: string
-	state: string
-}
 // TODO: Make sure this matches `RooCodeEvents` from `@roo-code/types`.
 export interface RooCodeAPIEvents {
 	message: [data: { taskId: string; action: "created" | "updated"; message: ClineMessage }]

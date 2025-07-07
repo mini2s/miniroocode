@@ -8,7 +8,6 @@ import {
 	openAiModelInfoSaneDefaults,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
 	OPENAI_AZURE_AI_INFERENCE_PATH,
-	AuthTokens,
 } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"

@@ -1,5 +1,5 @@
 import * as vscode from "vscode"
-import type { AuthTokens, LoginState } from "@roo-code/types"
+import type { AuthTokens, LoginState } from "./types"
 import type { ClineProvider } from "../webview/ClineProvider"
 import { safeJsonParse } from "../../shared/safeJsonParse"
 

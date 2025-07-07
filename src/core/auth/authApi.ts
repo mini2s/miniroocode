@@ -12,15 +12,15 @@ import { joinUrl } from "../../utils/joinUrl"
 export interface LoginResponse {
 	success: boolean
 	data?: LoginState
-	error?: string
-	status?: number
+	message?: string
+	code?: string
 }
 
 export interface LoginTokenResponse {
 	success: boolean
 	data?: AuthTokens
-	error?: string
-	status?: number
+	message?: string
+	code?: string
 }
 export class AuthApi {
 	private config: AuthConfig
