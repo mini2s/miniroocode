@@ -112,7 +112,7 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "jul-02-2025-3-22-6" // Update for v3.22.6 announcement
+	public readonly latestAnnouncementId = "jul-09-2025-3-23-0" // Update for v3.23.0 announcement
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 
@@ -1353,6 +1353,7 @@ export class ClineProvider
 			alwaysAllowMcp,
 			alwaysAllowModeSwitch,
 			alwaysAllowSubtasks,
+			alwaysAllowUpdateTodoList,
 			allowedMaxRequests,
 			autoCondenseContext,
 			autoCondenseContextPercent,
@@ -1439,6 +1440,7 @@ export class ClineProvider
 			alwaysAllowMcp: alwaysAllowMcp ?? false,
 			alwaysAllowModeSwitch: alwaysAllowModeSwitch ?? false,
 			alwaysAllowSubtasks: alwaysAllowSubtasks ?? false,
+			alwaysAllowUpdateTodoList: alwaysAllowUpdateTodoList ?? false,
 			allowedMaxRequests,
 			autoCondenseContext: autoCondenseContext ?? true,
 			autoCondenseContextPercent: autoCondenseContextPercent ?? 100,
@@ -1514,7 +1516,7 @@ export class ClineProvider
 			customCondensingPrompt,
 			codebaseIndexModels: codebaseIndexModels ?? EMBEDDING_MODEL_PROFILES,
 			codebaseIndexConfig: codebaseIndexConfig ?? {
-				codebaseIndexEnabled: false,
+				codebaseIndexEnabled: true,
 				codebaseIndexQdrantUrl: "http://localhost:6333",
 				codebaseIndexEmbedderProvider: "openai",
 				codebaseIndexEmbedderBaseUrl: "",
@@ -1607,6 +1609,7 @@ export class ClineProvider
 			alwaysAllowModeSwitch: stateValues.alwaysAllowModeSwitch ?? false,
 			alwaysAllowSubtasks: stateValues.alwaysAllowSubtasks ?? false,
 			alwaysAllowFollowupQuestions: stateValues.alwaysAllowFollowupQuestions ?? false,
+			alwaysAllowUpdateTodoList: stateValues.alwaysAllowUpdateTodoList ?? false,
 			followupAutoApproveTimeoutMs: stateValues.followupAutoApproveTimeoutMs ?? 60000,
 			allowedMaxRequests: stateValues.allowedMaxRequests,
 			autoCondenseContext: stateValues.autoCondenseContext ?? true,
@@ -1671,7 +1674,7 @@ export class ClineProvider
 			customCondensingPrompt: stateValues.customCondensingPrompt,
 			codebaseIndexModels: stateValues.codebaseIndexModels ?? EMBEDDING_MODEL_PROFILES,
 			codebaseIndexConfig: stateValues.codebaseIndexConfig ?? {
-				codebaseIndexEnabled: false,
+				codebaseIndexEnabled: true,
 				codebaseIndexQdrantUrl: "http://localhost:6333",
 				codebaseIndexEmbedderProvider: "openai",
 				codebaseIndexEmbedderBaseUrl: "",
