@@ -28,9 +28,7 @@ export function validateApiConfiguration(
 function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): string | undefined {
 	switch (apiConfiguration.apiProvider) {
 		case "zgsm":
-			if (!apiConfiguration.zgsmAccessToken) {
-				return i18next.t("settings:validation.apiKey")
-			}
+			return validateZgsmBaseUrl(apiConfiguration)
 			break
 		case "openrouter":
 			if (!apiConfiguration.openRouterApiKey) {
@@ -306,4 +304,24 @@ export function validateApiConfigurationExcludingModelErrors(
 
 	// skip model validation errors as they'll be shown in the model selector
 	return undefined
+}
+
+const VALID_PROTOCOLS = ["http://", "https://"]
+
+// Validates if a string is a valid URL
+export const isValidUrl = (url: string) => {
+	try {
+		const parsed = new URL(url)
+		return VALID_PROTOCOLS.includes(parsed.protocol + "//")
+	} catch {
+		return false
+	}
+}
+
+export function validateZgsmBaseUrl(apiConfiguration: ProviderSettings): string | undefined {
+	if (!apiConfiguration.zgsmBaseUrl || isValidUrl(apiConfiguration.zgsmBaseUrl)) {
+		return undefined
+	}
+
+	return i18next.t("settings:validation.apiKey")
 }
