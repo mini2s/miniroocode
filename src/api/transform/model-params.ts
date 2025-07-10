@@ -18,7 +18,7 @@ import {
 	getOpenRouterReasoning,
 } from "./reasoning"
 
-type Format = "anthropic" | "openai" | "gemini" | "openrouter"
+type Format = "anthropic" | "openai" | "gemini" | "openrouter" | "zgsm"
 
 type GetModelParamsOptions<T extends Format> = {
 	format: T
@@ -55,13 +55,35 @@ type OpenRouterModelParams = {
 	reasoning: OpenRouterReasoningParams | undefined
 } & BaseModelParams
 
-export type ModelParams = AnthropicModelParams | OpenAiModelParams | GeminiModelParams | OpenRouterModelParams
+type ZgsmModelParams = (
+	| {
+			format: "zgsm"
+			reasoning:
+				| AnthropicModelParams["reasoning"]
+				| OpenAiModelParams["reasoning"]
+				| GeminiModelParams["reasoning"]
+				| undefined
+	  }
+	| Omit<AnthropicModelParams, "format">
+	| Omit<OpenAiModelParams, "format">
+	| Omit<GeminiModelParams, "format">
+	| Omit<OpenRouterModelParams, "format">
+) &
+	BaseModelParams
+
+export type ModelParams =
+	| AnthropicModelParams
+	| OpenAiModelParams
+	| GeminiModelParams
+	| OpenRouterModelParams
+	| ZgsmModelParams
 
 // Function overloads for specific return types
 export function getModelParams(options: GetModelParamsOptions<"anthropic">): AnthropicModelParams
 export function getModelParams(options: GetModelParamsOptions<"openai">): OpenAiModelParams
 export function getModelParams(options: GetModelParamsOptions<"gemini">): GeminiModelParams
 export function getModelParams(options: GetModelParamsOptions<"openrouter">): OpenRouterModelParams
+export function getModelParams(options: GetModelParamsOptions<"zgsm">): ZgsmModelParams
 export function getModelParams({
 	format,
 	modelId,
@@ -149,6 +171,18 @@ export function getModelParams({
 			format,
 			...params,
 			reasoning: getGeminiReasoning({ model, reasoningBudget, reasoningEffort, settings }),
+		}
+	} else if (format === "zgsm") {
+		// Special case for o1 and o3-mini, which don't support temperature.
+		// TODO: Add a `supportsTemperature` field to the model info.
+		if (modelId.startsWith("o1") || modelId.startsWith("o3-mini")) {
+			params.temperature = undefined
+		}
+
+		return {
+			format,
+			...params,
+			reasoning: getOpenAiReasoning({ model, reasoningBudget, reasoningEffort, settings }),
 		}
 	} else {
 		// Special case for o1-pro, which doesn't support temperature.

@@ -38,6 +38,7 @@ import type { RouterModels } from "@roo/api"
 
 import { useRouterModels } from "./useRouterModels"
 import { useOpenRouterModelProviders } from "./useOpenRouterModelProviders"
+import { getZgsmSelectedModelInfo } from "@roo/getZgsmSelectedModelInfo"
 
 export const useSelectedModel = (apiConfiguration?: ProviderSettings) => {
 	const provider = apiConfiguration?.apiProvider || "zgsm"
@@ -82,6 +83,11 @@ function getSelectedModel({
 	// users from seeing the default model if their selection is invalid
 	// this gives a better UX than showing the default model
 	switch (provider) {
+		case "zgsm": {
+			const id = apiConfiguration.zgsmModelId ?? "deepseek-v3"
+			const info = getZgsmSelectedModelInfo(id)
+			return { id, info }
+		}
 		case "openrouter": {
 			const id = apiConfiguration.openRouterModelId ?? openRouterDefaultModelId
 			let info = routerModels.openrouter[id]

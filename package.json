@@ -5,6 +5,7 @@
 		"node": "20.19.2"
 	},
 	"scripts": {
+		"generate-protos": "node scripts/generate-protos.js",
 		"preinstall": "node scripts/bootstrap.mjs",
 		"prepare": "husky",
 		"install": "node scripts/bootstrap.mjs",

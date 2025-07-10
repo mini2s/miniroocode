@@ -202,7 +202,7 @@ export interface WebviewMessage {
 		| "requestCodeIndexSecretStatus"
 	text?: string
 	editedMessageContent?: string
-	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "account"
+	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "account" | "zgsm-account"
 	disabled?: boolean
 	dataUri?: string
 	askResponse?: ClineAskResponse

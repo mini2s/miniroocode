@@ -15,7 +15,6 @@ import ApiOptions from "../settings/ApiOptions"
 import { Tab, TabContent } from "../common/Tab"
 
 import RooHero from "./RooHero"
-import { LoginButton } from "../LoginButton"
 
 const WelcomeView = () => {
 	const { apiConfiguration, currentApiConfigName, setApiConfiguration, uriScheme, machineId } = useExtensionState()
@@ -51,9 +50,6 @@ const WelcomeView = () => {
 	return (
 		<Tab>
 			<TabContent className="flex flex-col gap-5 p-16">
-				<div style={{ position: "absolute", top: "1rem", right: "10rem", zIndex: 100 }}>
-					<LoginButton />
-				</div>
 				<RooHero />
 				<h2 className="mt-0 mb-0">{t("welcome:greeting")}</h2>
 

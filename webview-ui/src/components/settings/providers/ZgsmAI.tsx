@@ -24,6 +24,7 @@ import { R1FormatSetting } from "../R1FormatSetting"
 import { ThinkingBudget } from "../ThinkingBudget"
 
 type OpenAICompatibleProps = {
+	fromWelcomeView?: boolean
 	apiConfiguration: ProviderSettings
 	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
 	organizationAllowList: OrganizationAllowList
@@ -32,6 +33,7 @@ type OpenAICompatibleProps = {
 
 export const ZgsmAI = ({
 	apiConfiguration,
+	fromWelcomeView,
 	setApiConfigurationField,
 	organizationAllowList,
 	modelValidationError,
@@ -109,7 +111,7 @@ export const ZgsmAI = ({
 		const message: ExtensionMessage = event.data
 
 		switch (message.type) {
-			case "openAiModels": {
+			case "zgsmModels": {
 				const updatedModels = message.openAiModels ?? []
 				setOpenAiModels(Object.fromEntries(updatedModels.map((item) => [item, openAiModelInfoSaneDefaults])))
 				break
@@ -121,29 +123,31 @@ export const ZgsmAI = ({
 
 	return (
 		<>
-			<VSCodeTextField
-				value={apiConfiguration?.openAiBaseUrl || ""}
-				type="url"
-				onInput={handleInputChange("openAiBaseUrl")}
-				placeholder={t("settings:placeholders.baseUrl")}
-				className="w-full">
-				<label className="block font-medium mb-1">{t("settings:providers.openAiBaseUrl")}</label>
-			</VSCodeTextField>
-			<VSCodeTextField
-				value={apiConfiguration?.openAiApiKey || ""}
+			{fromWelcomeView && (
+				<VSCodeTextField
+					value={apiConfiguration?.zgsmBaseUrl || ""}
+					type="url"
+					onInput={handleInputChange("zgsmBaseUrl")}
+					placeholder={t("settings:placeholders.baseUrl")}
+					className="w-full">
+					<label className="block font-medium mb-1">{t("settings:providers.openAiBaseUrl")}</label>
+				</VSCodeTextField>
+			)}
+			{/* <VSCodeTextField
+				value={apiConfiguration?.zgsmAccessToken || ""}
 				type="password"
-				onInput={handleInputChange("openAiApiKey")}
+				onInput={handleInputChange("zgsmAccessToken")}
 				placeholder={t("settings:placeholders.apiKey")}
 				className="w-full">
 				<label className="block font-medium mb-1">{t("settings:providers.apiKey")}</label>
-			</VSCodeTextField>
+			</VSCodeTextField> */}
 			<ModelPicker
 				apiConfiguration={apiConfiguration}
 				setApiConfigurationField={setApiConfigurationField}
 				defaultModelId="deepseek-v3"
 				models={openAiModels}
 				modelIdKey="zgsmModelId"
-				serviceName="OpenAI"
+				serviceName="zgsm"
 				serviceUrl={apiConfiguration.zgsmBaseUrl || ""}
 				organizationAllowList={organizationAllowList}
 				errorMessage={modelValidationError}

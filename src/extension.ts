@@ -30,7 +30,7 @@ import { MdmService } from "./services/mdm/MdmService"
 import { migrateSettings } from "./utils/migrateSettings"
 import { autoImportSettings } from "./utils/autoImportSettings"
 import { API } from "./extension/api"
-import { AuthCommands, ZgsmAuthService } from "./core/auth/index"
+import { AuthCommands, AuthConfig, ZgsmAuthService } from "./core/auth/index"
 
 import {
 	handleUri,
@@ -40,6 +40,10 @@ import {
 	CodeActionProvider,
 } from "./activate"
 import { initializeI18n } from "./i18n"
+import { startIPCServer, stopIPCServer } from "./core/auth/ipc/server"
+import { connectIPC, disconnectIPC, onTokensUpdate } from "./core/auth/ipc/client"
+import { initZgsmCodeBase } from "./core/codebase"
+import { ZgsmCodeBaseSyncService } from "./core/codebase/client"
 
 /**
  * Built using https://github.com/microsoft/vscode-webview-ui-toolkit
@@ -112,6 +116,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, codeIndexManager, mdmService)
 	TelemetryService.instance.setProvider(provider)
+	ZgsmCodeBaseSyncService.setProvider(provider)
 
 	if (codeIndexManager) {
 		context.subscriptions.push(codeIndexManager)
@@ -217,21 +222,32 @@ export async function activate(context: vscode.ExtensionContext) {
 
 // This method is called when your extension is deactivated.
 export async function deactivate() {
+	ZgsmCodeBaseSyncService.stopSync()
+	// Clean up IPC connections
+	disconnectIPC()
+	stopIPCServer()
 	outputChannel.appendLine(`${Package.name} extension deactivated`)
 	await McpServerManager.cleanup(extensionContext)
 	TelemetryService.instance.shutdown()
 	TerminalRegistry.cleanup()
-
-	// 清理认证服务
-	if (authCommands) {
-		authCommands.dispose()
-	}
 }
 
 async function zgsmInitialize(context: vscode.ExtensionContext, provider: ClineProvider) {
+	startIPCServer()
+	connectIPC()
+
 	ZgsmAuthService.initialize(provider)
+	context.subscriptions.push(ZgsmAuthService.getInstance())
+	context.subscriptions.push(
+		onTokensUpdate((tokens: { state: string; access_token: string; refresh_token: string }) => {
+			ZgsmAuthService.getInstance().saveTokens(tokens)
+			provider.log(`new token from other window: ${tokens.access_token}`)
+		}),
+	)
 	//  🔑 关键：初始化认证服务单例，插件启动时检查登录状态
 	AuthCommands.initialize(provider)
+	context.subscriptions.push(AuthCommands.getInstance())
+
 	authCommands = AuthCommands.getInstance()
 	authCommands.registerCommands(context)
 
@@ -251,11 +267,14 @@ async function zgsmInitialize(context: vscode.ExtensionContext, provider: ClineP
 					if (!tokens) {
 						return
 					}
+					initZgsmCodeBase(AuthConfig.getInstance().getDefaultApiBaseUrl(), tokens.access_token)
+
 					ZgsmAuthService.getInstance().startTokenRefresh(
 						tokens.refresh_token,
 						vscode.env.machineId,
 						tokens.state,
 					)
+					ZgsmAuthService.getInstance().updateUserInfo(tokens.access_token)
 				})
 			// 开始token刷新定时器
 		} else {

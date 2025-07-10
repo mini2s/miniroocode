@@ -20,11 +20,11 @@ import ModesView from "./components/modes/ModesView"
 import { HumanRelayDialog } from "./components/human-relay/HumanRelayDialog"
 import { AccountView } from "./components/account/AccountView"
 import { useAddNonInteractiveClickListener } from "./components/ui/hooks/useNonInteractiveClick"
-import { LoginButton } from "./components/LoginButton"
 import { TooltipProvider } from "./components/ui/tooltip"
 import { STANDARD_TOOLTIP_DELAY } from "./components/ui/standard-tooltip"
+import { ZgsmAccountView } from "./components/account/ZgsmAccountView"
 
-type Tab = "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "account"
+type Tab = "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "account" | "zgsm-account"
 
 const tabsByMessageAction: Partial<Record<NonNullable<ExtensionMessage["action"]>, Tab>> = {
 	chatButtonClicked: "chat",
@@ -34,6 +34,7 @@ const tabsByMessageAction: Partial<Record<NonNullable<ExtensionMessage["action"]
 	historyButtonClicked: "history",
 	marketplaceButtonClicked: "marketplace",
 	accountButtonClicked: "account",
+	zgsmAccountButtonClicked: "zgsm-account",
 }
 
 const App = () => {
@@ -49,6 +50,7 @@ const App = () => {
 		cloudApiUrl,
 		renderContext,
 		mdmCompliant,
+		apiConfiguration,
 	} = useExtensionState()
 
 	// Create a persistent state manager
@@ -73,7 +75,7 @@ const App = () => {
 	const switchTab = useCallback(
 		(newTab: Tab) => {
 			// Check MDM compliance before allowing tab switching
-			if (mdmCompliant === false && newTab !== "account") {
+			if (mdmCompliant === false && newTab !== "account" && newTab !== "zgsm-account") {
 				return
 			}
 
@@ -105,7 +107,10 @@ const App = () => {
 					setCurrentMarketplaceTab(undefined)
 				} else {
 					// Handle other actions using the mapping
-					const newTab = tabsByMessageAction[message.action]
+					const newTab =
+						tabsByMessageAction[
+							message.action === "accountButtonClicked" ? "zgsmAccountButtonClicked" : message.action
+						]
 					const section = message.values?.section as string | undefined
 					const marketplaceTab = message.values?.marketplaceTab as string | undefined
 
@@ -173,9 +178,6 @@ const App = () => {
 		<WelcomeView />
 	) : (
 		<>
-			<div style={{ position: "absolute", top: "1rem", right: "10rem", zIndex: 100 }}>
-				<LoginButton />
-			</div>
 			{tab === "modes" && <ModesView onDone={() => switchTab("chat")} />}
 			{tab === "mcp" && <McpView onDone={() => switchTab("chat")} />}
 			{tab === "history" && <HistoryView onDone={() => switchTab("chat")} />}
@@ -196,6 +198,9 @@ const App = () => {
 					cloudApiUrl={cloudApiUrl}
 					onDone={() => switchTab("chat")}
 				/>
+			)}
+			{tab === "zgsm-account" && (
+				<ZgsmAccountView apiConfiguration={apiConfiguration} onDone={() => switchTab("chat")} />
 			)}
 			<ChatView
 				ref={chatViewRef}

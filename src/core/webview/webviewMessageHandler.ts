@@ -39,6 +39,7 @@ import { singleCompletionHandler } from "../../utils/single-completion-handler"
 import { searchCommits } from "../../utils/git"
 import { exportSettings, importSettingsWithFeedback } from "../config/importExport"
 import { getOpenAiModels } from "../../api/providers/openai"
+import { getZgsmModels } from "../../api/providers/zgsm"
 import { getVsCodeLmModels } from "../../api/providers/vscode-lm"
 import { openMention } from "../mentions"
 import { TelemetrySetting } from "../../shared/TelemetrySetting"
@@ -54,6 +55,7 @@ const ALLOWED_VSCODE_SETTINGS = new Set(["terminal.integrated.inheritEnv"])
 
 import { MarketplaceManager, MarketplaceItemType } from "../../services/marketplace"
 import { setPendingTodoList } from "../tools/updateTodoListTool"
+import { AuthConfig } from "../auth"
 
 export const webviewMessageHandler = async (
 	provider: ClineProvider,
@@ -703,6 +705,18 @@ export const webviewMessageHandler = async (
 				)
 
 				provider.postMessageToWebview({ type: "openAiModels", openAiModels })
+			}
+
+			break
+		case "requestZgsmModels":
+			if (message?.values?.apiKey) {
+				const openAiModels = await getZgsmModels(
+					message?.values?.baseUrl || AuthConfig.getInstance().getDefaultApiBaseUrl(),
+					message?.values?.apiKey,
+					message?.values?.openAiHeaders,
+				)
+
+				provider.postMessageToWebview({ type: "zgsmModels", openAiModels })
 			}
 
 			break
@@ -2207,11 +2221,25 @@ export const webviewMessageHandler = async (
 			break
 		}
 		case "zgsmLogin": {
-			provider.getAuthCommands?.()?.handleLogin()
+			try {
+				TelemetryService.instance.captureEvent(TelemetryEventName.AUTHENTICATION_INITIATED)
+				await provider.getAuthCommands?.()?.handleLogin()
+			} catch (error) {
+				provider.log(`AuthService#login failed: ${error}`)
+				vscode.window.showErrorMessage("Sign in failed.")
+			}
+
 			break
 		}
 		case "zgsmLogout": {
-			provider.getAuthCommands?.()?.handleLogout()
+			try {
+				await provider.getAuthCommands?.()?.handleLogout()
+				await provider.postStateToWebview()
+			} catch (error) {
+				provider.log(`AuthService#logout failed: ${error}`)
+				vscode.window.showErrorMessage("Sign out failed.")
+			}
+
 			break
 		}
 		case "zgsmAbort": {

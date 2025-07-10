@@ -149,6 +149,11 @@ export const SECRET_STATE_KEYS = [
 	"codeIndexQdrantApiKey",
 	"codebaseIndexOpenAiCompatibleApiKey",
 	"codebaseIndexGeminiApiKey",
+	"zgsmAccessToken",
+	"zgsmBaseUrl",
+	"zgsmModelId",
+	"zgsmRefreshToken",
+	"zgsmState",
 ] as const satisfies readonly (keyof ProviderSettings)[]
 export type SecretState = Pick<ProviderSettings, (typeof SECRET_STATE_KEYS)[number]>
 

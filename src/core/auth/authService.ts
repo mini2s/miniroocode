@@ -4,9 +4,9 @@ import { AuthApi, LoginTokenResponse } from "./authApi"
 import { AuthConfig } from "./authConfig"
 import type { ProviderSettings } from "@roo-code/types"
 import type { ClineProvider } from "../webview/ClineProvider"
-import { getParams, retryWrapper } from "../../utils/zgsmUtils"
+import { getParams, parseJwt, retryWrapper } from "../../utils/zgsmUtils"
 import { joinUrl } from "../../utils/joinUrl"
-import { AuthStatus, AuthTokens, LoginState } from "./types"
+import { AuthStatus, AuthTokens, LoginState, ZgsmUserInfo } from "./types"
 
 export class ZgsmAuthService {
 	private static instance: ZgsmAuthService
@@ -20,6 +20,7 @@ export class ZgsmAuthService {
 	private startLoginTokenPollInterval?: NodeJS.Timeout
 	private clineProvider: ClineProvider
 	private disposed = false
+	private userInfo = {} as ZgsmUserInfo
 
 	protected constructor(clineProvider: ClineProvider) {
 		this.storage = AuthStorage.getInstance()
@@ -293,6 +294,9 @@ export class ZgsmAuthService {
 	async getTokens() {
 		return await this.storage.getTokens()
 	}
+	async saveTokens(tokens: AuthTokens) {
+		return await this.storage.saveTokens(tokens)
+	}
 
 	/**
 	 * 插件启动时检查登录状态
@@ -306,23 +310,24 @@ export class ZgsmAuthService {
 			if (!tokens?.access_token || !tokens?.refresh_token) {
 				return false
 			}
-			const machineId = this.getMachineId()
-			// 尝试刷新token来验证登录状态
-			// const newTokens = await this.refreshToken(tokens.refresh_token, vscode.env.machineId, tokens.state, false)
-			const result = await retryWrapper(
-				"checkLoginStatusOnStartup",
-				() => this.api.getUserLoginState(tokens.state, tokens.access_token),
-				() => 1000,
-				2,
-			)
+			// const machineId = this.getMachineId()
+			// // 尝试刷新token来验证登录状态
+			// // const newTokens = await this.refreshToken(tokens.refresh_token, vscode.env.machineId, tokens.state, false)
+			// const result = await retryWrapper(
+			// 	"checkLoginStatusOnStartup",
+			// 	() => this.api.getUserLoginState(tokens.state, tokens.access_token),
+			// 	() => 1000,
+			// 	2,
+			// )
 
-			if (result.data?.status !== AuthStatus.LOGGED_IN) {
-				console.error("请求返回缺少 refresh_token")
+			// if (result.data?.status !== AuthStatus.LOGGED_IN) {
+			// 	console.error("请求返回缺少 refresh_token")
 
-				return false
-			}
+			// 	return false
+			// }
+			const jwt = parseJwt(tokens?.refresh_token)
 
-			return true
+			return jwt.exp * 1000 > Date.now()
 		} catch (error) {
 			console.error("启动时检查登录状态失败:", error)
 			// 清除无效的登录信息
@@ -352,8 +357,6 @@ export class ZgsmAuthService {
 		await this.onLogout()
 		// 清除存储的登录信息
 		await this.storage.clearAllLoginState()
-
-		vscode.window.showInformationMessage("已退出登录")
 	}
 
 	/**
@@ -409,9 +412,30 @@ export class ZgsmAuthService {
 	 * 登录成功回调
 	 */
 	protected onLoginSuccess(tokens: AuthTokens): void {
+		this.updateUserInfo(tokens.refresh_token)
 		// 可以在这里添加登录成功后的逻辑
-		console.log("用户登录成功")
+		console.log("用户登录成功: ", this.userInfo.name)
 	}
+
+	updateUserInfo(token: string) {
+		const jwt = parseJwt(token)
+
+		this.userInfo = {
+			id: jwt.id,
+			name: jwt?.properties?.oauth_GitHub_username || jwt.displayName,
+			picture: jwt.avatar,
+			email: jwt.email,
+			phone: jwt.phone,
+		}
+	}
+
+	getUserInfo() {
+		return this.userInfo
+	}
+
+	// 	this.clineProvider.setValue("zgsmRefreshToken", tokens.refresh_token)
+	// this.clineProvider.setValue("zgsmAccessToken", tokens.access_token)
+	// this.clineProvider.setValue("zgsmState", tokens.state)
 
 	/**
 	 * 登出回调

@@ -24,6 +24,7 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { AuthConfig } from "../../core/auth"
+import { getZgsmSelectedModelInfo } from "../../shared/getZgsmSelectedModelInfo"
 // TODO: Rename this to OpenAICompatibleHandler. Also, I think the
 // `OpenAINativeHandler` can subclass from this, since it's obviously
 // compatible with the OpenAI API. We can also rename it to `OpenAIHandler`.
@@ -36,7 +37,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		super()
 		this.options = options
 
-		this.baseURL = this.options.zgsmBaseUrl ?? AuthConfig.getInstance().getDefaultApiBaseUrl()
+		this.baseURL = `${this.options.zgsmBaseUrl ?? AuthConfig.getInstance().getDefaultApiBaseUrl()}/chat-rag/api/v1`
 		const apiKey = options.zgsmAccessToken ?? "not-provided"
 		const isAzureAiInference = this._isAzureAiInference(this.baseURL)
 		const urlHost = this._getUrlHost(this.baseURL)
@@ -249,9 +250,9 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 	}
 
 	override getModel() {
-		const id = this.options.zgsmModelId ?? ""
-		const info = this.options.openAiCustomModelInfo ?? openAiModelInfoSaneDefaults
-		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
+		const id = this.options.zgsmModelId ?? "deepseek-v3"
+		const info = this.options.openAiCustomModelInfo ?? getZgsmSelectedModelInfo(id)
+		const params = getModelParams({ format: "zgsm", modelId: id, model: info, settings: this.options })
 		return { id, info, ...params }
 	}
 
@@ -435,7 +436,7 @@ export async function getZgsmModels(baseUrl?: string, apiKey?: string, openAiHea
 			config["headers"] = headers
 		}
 
-		const response = await axios.get(`${baseUrl}/models`, config)
+		const response = await axios.get(`${baseUrl}/ai-gateway/api/v1/models`, config)
 		const modelsArray = response.data?.data?.map((model: any) => model.id) || []
 		return [...new Set<string>(modelsArray)]
 	} catch (error) {

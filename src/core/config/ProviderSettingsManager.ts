@@ -2,6 +2,7 @@ import { ExtensionContext } from "vscode"
 import { z, ZodError } from "zod"
 
 import {
+	ProviderSettings,
 	type ProviderSettingsEntry,
 	providerSettingsSchema,
 	providerSettingsSchemaDiscriminated,
@@ -265,6 +266,27 @@ export class ProviderSettingsManager {
 				providerProfiles.apiConfigs[name] = { ...filteredConfig, id }
 				await this.store(providerProfiles)
 				return id
+			})
+		} catch (error) {
+			throw new Error(`Failed to save config: ${error}`)
+		}
+	}
+
+	public async saveMergeConfig(
+		config: ProviderSettings,
+		callback: (name: string, info: ProviderSettings) => boolean,
+	): Promise<void> {
+		try {
+			return await this.lock(async () => {
+				const providerProfiles = await this.load()
+
+				Object.entries(providerProfiles.apiConfigs).forEach(([name, apiConfig]) => {
+					if (callback(name, apiConfig)) {
+						providerProfiles.apiConfigs[name] = { ...apiConfig, ...config }
+					}
+				})
+
+				await this.store(providerProfiles)
 			})
 		} catch (error) {
 			throw new Error(`Failed to save config: ${error}`)

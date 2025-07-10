@@ -158,8 +158,8 @@ const ApiOptions = ({
 				vscode.postMessage({
 					type: "requestZgsmModels",
 					values: {
-						baseUrl: apiConfiguration?.openAiBaseUrl,
-						apiKey: apiConfiguration?.openAiApiKey,
+						baseUrl: apiConfiguration?.zgsmBaseUrl,
+						apiKey: apiConfiguration?.zgsmAccessToken,
 						customHeaders: {}, // Reserved for any additional headers
 						openAiHeaders: headerObject,
 					},
@@ -358,6 +358,7 @@ const ApiOptions = ({
 			{errorMessage && <ApiErrorMessage errorMessage={errorMessage} />}
 			{selectedProvider === "zgsm" && (
 				<ZgsmAI
+					fromWelcomeView={fromWelcomeView}
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
 					organizationAllowList={organizationAllowList}

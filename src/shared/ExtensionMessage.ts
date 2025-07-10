@@ -18,6 +18,7 @@ import { McpServer } from "./mcp"
 import { Mode } from "./modes"
 import { RouterModels } from "./api"
 import type { MarketplaceItem } from "@roo-code/types"
+import { ZgsmUserInfo } from "../core/auth"
 
 // Type for marketplace installed metadata
 export interface MarketplaceInstalledMetadata {
@@ -64,6 +65,9 @@ export interface ExtensionMessage {
 		| "listApiConfig"
 		| "routerModels"
 		| "openAiModels"
+		// zgsm
+		| "zgsmModels"
+		// zgsm
 		| "ollamaModels"
 		| "lmStudioModels"
 		| "vsCodeLmModels"
@@ -115,6 +119,7 @@ export interface ExtensionMessage {
 		| "promptsButtonClicked"
 		| "marketplaceButtonClicked"
 		| "accountButtonClicked"
+		| "zgsmAccountButtonClicked"
 		| "didBecomeVisible"
 		| "focusInput"
 		| "switchTab"

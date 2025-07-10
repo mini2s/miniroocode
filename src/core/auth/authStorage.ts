@@ -1,7 +1,11 @@
 import * as vscode from "vscode"
 import type { AuthTokens, LoginState } from "./types"
 import type { ClineProvider } from "../webview/ClineProvider"
-import { safeJsonParse } from "../../shared/safeJsonParse"
+import { parseJwt } from "../../utils/zgsmUtils"
+import { sendTokens } from "./ipc/client"
+import { initZgsmCodeBase } from "../codebase"
+import { AuthConfig } from "./authConfig"
+// import { safeJsonParse } from "../../shared/safeJsonParse"
 
 export class AuthStorage {
 	private clineProvider?: ClineProvider
@@ -40,18 +44,41 @@ export class AuthStorage {
 		if (!state.currentApiConfigName) {
 			return
 		}
+		if (
+			tokens.access_token === state.apiConfiguration.zgsmAccessToken ||
+			tokens.refresh_token === state.apiConfiguration.zgsmRefreshToken
+		) {
+			this.clineProvider?.log(`[ZgsmLoginManager:${state}] saveTokens: tokens are already saved`)
+			return
+		}
+		const zgsmApiKeyUpdatedAt = new Date().toLocaleString()
+		const zgsmApiKeyExpiredAt = new Date(parseJwt(tokens.access_token).exp * 1000).toLocaleString()
 		const config = {
 			...state.apiConfiguration,
 			zgsmRefreshToken: tokens.refresh_token,
 			zgsmAccessToken: tokens.access_token,
 			zgsmState: tokens.state,
+			zgsmApiKeyUpdatedAt,
+			zgsmApiKeyExpiredAt,
 		}
+		await this.clineProvider?.providerSettingsManager.saveMergeConfig(config, (name, { apiProvider }) => {
+			return apiProvider === "zgsm" && name !== state.currentApiConfigName
+		})
 		// well
 		this.clineProvider.setValue("zgsmRefreshToken", tokens.refresh_token)
 		this.clineProvider.setValue("zgsmAccessToken", tokens.access_token)
 		this.clineProvider.setValue("zgsmState", tokens.state)
+		this.clineProvider.setValue("zgsmApiKeyUpdatedAt", zgsmApiKeyUpdatedAt)
+		this.clineProvider.setValue("zgsmApiKeyExpiredAt", zgsmApiKeyExpiredAt)
 		// well well
 		await this.clineProvider.upsertProviderProfile(state.currentApiConfigName, config, false)
+
+		sendTokens(tokens)
+
+		initZgsmCodeBase(
+			state.apiConfiguration.zgsmBaseUrl || AuthConfig.getInstance().getDefaultApiBaseUrl(),
+			tokens.access_token,
+		)
 	}
 
 	/**

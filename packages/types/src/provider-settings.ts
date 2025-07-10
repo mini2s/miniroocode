@@ -86,6 +86,8 @@ const zgsmSchema = apiModelIdProviderModelSchema.extend({
 	zgsmState: z.string().optional(),
 	zgsmBaseUrl: z.string().optional(),
 	zgsmModelId: z.string().optional(),
+	zgsmApiKeyUpdatedAt: z.string().optional(),
+	zgsmApiKeyExpiredAt: z.string().optional(),
 })
 
 const anthropicSchema = apiModelIdProviderModelSchema.extend({

@@ -27,6 +27,11 @@ export function validateApiConfiguration(
 
 function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): string | undefined {
 	switch (apiConfiguration.apiProvider) {
+		case "zgsm":
+			if (!apiConfiguration.zgsmAccessToken) {
+				return i18next.t("settings:validation.apiKey")
+			}
+			break
 		case "openrouter":
 			if (!apiConfiguration.openRouterApiKey) {
 				return i18next.t("settings:validation.apiKey")
