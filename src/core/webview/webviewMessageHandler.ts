@@ -2207,11 +2207,11 @@ export const webviewMessageHandler = async (
 			break
 		}
 		case "zgsmLogin": {
-			provider.getAuthCommands()?.handleLogin()
+			provider.getAuthCommands?.()?.handleLogin()
 			break
 		}
 		case "zgsmLogout": {
-			provider.getAuthCommands()?.handleLogout()
+			provider.getAuthCommands?.()?.handleLogout()
 			break
 		}
 		case "zgsmAbort": {

@@ -108,7 +108,7 @@ export class ClineProvider
 	protected mcpHub?: McpHub // Change from private to protected
 	private marketplaceManager: MarketplaceManager
 	private mdmService?: MdmService
-	private authCommands: AuthCommands
+	private authCommands?: AuthCommands
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
@@ -159,10 +159,6 @@ export class ClineProvider
 			})
 
 		this.marketplaceManager = new MarketplaceManager(this.context)
-
-		// 初始化并获取 AuthCommands 单例
-		AuthCommands.initialize(this)
-		this.authCommands = AuthCommands.getInstance()
 	}
 
 	// Adds a new Cline instance to clineStack, marking the start of a new task.
@@ -1837,7 +1833,10 @@ export class ClineProvider
 		}
 	}
 
-	public getAuthCommands(): AuthCommands {
+	public getAuthCommands() {
 		return this.authCommands
+	}
+	public setAuthCommands(authCommands: AuthCommands) {
+		this.authCommands = authCommands
 	}
 }

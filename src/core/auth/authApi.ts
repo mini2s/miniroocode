@@ -5,8 +5,9 @@ import { AuthConfig } from "./authConfig"
 import type { ProviderSettings } from "@roo-code/types"
 import type { ClineProvider } from "../webview/ClineProvider"
 import { AuthTokens, LoginState } from "./types"
-import { Package } from "../../shared/package"
-import { createHeaders, getParams } from "../../utils/zgsmUtils"
+// import { Package } from "../../shared/package"
+// import { createHeaders, getParams } from "../../utils/zgsmUtils"
+import { getParams } from "../../utils/zgsmUtils"
 import { joinUrl } from "../../utils/joinUrl"
 
 export interface LoginResponse {

@@ -8,7 +8,7 @@ export function getParams(state: string, ignore: string[] = []) {
 		["machine_code", vscode.env.machineId],
 		["state", state],
 		["provider", "casdoor"],
-		["plugin_version", "1.5.0"],
+		["plugin_version", "1.5.3"],
 		// ["plugin_version", Package.version],
 		["vscode_version", vscode.version],
 		["uri_scheme", vscode.env.uriScheme],
@@ -23,7 +23,8 @@ export async function retryWrapper<T>(
 ): Promise<T> {
 	let lastError: Error | undefined
 	const _maxAttempt = Math.max(1, maxAttempt)
-	for (let attempt = 0; attempt < _maxAttempt; attempt++) {
+	let attempt = 0
+	for (; attempt < _maxAttempt; attempt++) {
 		try {
 			return await fn()
 		} catch (error) {
@@ -32,7 +33,7 @@ export async function retryWrapper<T>(
 			await new Promise((resolve) => setTimeout(resolve, interval(attempt)))
 		}
 	}
-	throw lastError || new Error("Operation failed after 3 attempts")
+	throw lastError || new Error(`Operation failed after ${attempt} attempts`)
 }
 
 export function parseJwt(token: string) {

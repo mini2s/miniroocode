@@ -5,9 +5,9 @@ import type { ClineProvider } from "../webview/ClineProvider"
 export class AuthCommands {
 	private static instance: AuthCommands
 	private authService: ZgsmAuthService
-	private clineProvider?: ClineProvider
+	private clineProvider: ClineProvider
 
-	private constructor(clineProvider?: ClineProvider) {
+	private constructor(clineProvider: ClineProvider) {
 		// 确保 AuthService 已经被初始化
 		this.authService = ZgsmAuthService.getInstance()
 		this.clineProvider = clineProvider
@@ -16,10 +16,9 @@ export class AuthCommands {
 		}
 	}
 
-	public static initialize(clineProvider?: ClineProvider): void {
+	public static initialize(clineProvider: ClineProvider): void {
 		if (!AuthCommands.instance) {
 			// 优先初始化依赖的服务
-			ZgsmAuthService.initialize(clineProvider)
 			AuthCommands.instance = new AuthCommands(clineProvider)
 		}
 	}
@@ -27,7 +26,7 @@ export class AuthCommands {
 	public static getInstance(): AuthCommands {
 		if (!AuthCommands.instance) {
 			// 在实际应用中，initialize应该已经被调用。
-			AuthCommands.initialize()
+			throw new Error("AuthCommands 未初始化")
 		}
 		return AuthCommands.instance!
 	}

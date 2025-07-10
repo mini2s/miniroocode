@@ -1,6 +1,6 @@
 import * as vscode from "vscode"
 import { AuthStorage } from "./authStorage"
-import { AuthApi } from "./authApi"
+import { AuthApi, LoginTokenResponse } from "./authApi"
 import { AuthConfig } from "./authConfig"
 import type { ProviderSettings } from "@roo-code/types"
 import type { ClineProvider } from "../webview/ClineProvider"
@@ -17,9 +17,11 @@ export class ZgsmAuthService {
 	private config: AuthConfig
 	private waitLoginPollingInterval?: NodeJS.Timeout
 	private tokenRefreshInterval?: NodeJS.Timeout
-	private clineProvider?: ClineProvider
+	private startLoginTokenPollInterval?: NodeJS.Timeout
+	private clineProvider: ClineProvider
+	private disposed = false
 
-	protected constructor(clineProvider?: ClineProvider) {
+	protected constructor(clineProvider: ClineProvider) {
 		this.storage = AuthStorage.getInstance()
 		if (clineProvider) {
 			this.storage.setClineProvider(clineProvider)
@@ -29,7 +31,7 @@ export class ZgsmAuthService {
 		this.clineProvider = clineProvider
 	}
 
-	public static initialize(clineProvider?: ClineProvider): void {
+	public static initialize(clineProvider: ClineProvider): void {
 		if (!ZgsmAuthService.instance) {
 			ZgsmAuthService.instance = new ZgsmAuthService(clineProvider)
 		}
@@ -37,9 +39,7 @@ export class ZgsmAuthService {
 
 	public static getInstance(): ZgsmAuthService {
 		if (!ZgsmAuthService.instance) {
-			// 在实际应用中，initialize应该已经被调用。
-			// 如果未初始化，这里创建一个没有 clineProvider 的实例作为后备。
-			ZgsmAuthService.instance = new ZgsmAuthService()
+			throw new Error("ZgsmAuthService not initialized")
 		}
 		return ZgsmAuthService.instance
 	}
@@ -87,7 +87,8 @@ export class ZgsmAuthService {
 	 */
 	async startLogin(): Promise<LoginState> {
 		this.stopWaitLoginPolling()
-
+		this.stopRefreshToken()
+		this.stopStartLoginTokenPoll()
 		try {
 			// 生成新的登录状态参数
 			this.loginStateTmp = this.generateLoginState()
@@ -100,13 +101,7 @@ export class ZgsmAuthService {
 
 			// 显示通知
 			vscode.window.showInformationMessage("登录页面已在浏览器中打开，请完成登录")
-			const result = await retryWrapper(
-				"startLogin.getRefreshUserToken",
-				() => this.api.getRefreshUserToken("", this.getMachineId(), this.loginStateTmp!.state),
-				() => 3000,
-				100,
-			)
-			// // 开始轮询登录状态
+			const result = await this.getStartLoginTokenPoll(this.loginStateTmp!.state)
 			this.startWaitLoginPolling(Object.assign(this.loginStateTmp, result.data))
 
 			return this.loginStateTmp
@@ -114,6 +109,45 @@ export class ZgsmAuthService {
 			vscode.window.showErrorMessage(`启动登录失败: ${error}`)
 			throw error
 		}
+	}
+
+	getStartLoginTokenPoll(state: string): Promise<LoginTokenResponse> {
+		return new Promise((resolve, reject) => {
+			const maxAttempt = 60
+			let attempt = 0
+			// 清除之前的定时器
+			this.stopStartLoginTokenPoll()
+
+			if (this.disposed) {
+				reject(new Error("AuthService已销毁"))
+				return
+			}
+
+			const run = async () => {
+				attempt++
+				if (attempt > maxAttempt) {
+					this.stopStartLoginTokenPoll()
+					reject(new Error("获取登录token超时"))
+					return
+				}
+
+				this.api
+					.getRefreshUserToken("", this.getMachineId(), state)
+					.then((result) => {
+						if (result.data?.access_token && result.data?.refresh_token && result.data?.state === state) {
+							this.stopStartLoginTokenPoll()
+							resolve(result)
+						} else {
+							this.startLoginTokenPollInterval = setTimeout(run, 3000)
+						}
+					})
+					.catch((error) => {
+						console.error("第 ${attempt} 获取登录token失败:", error)
+					})
+			}
+
+			run()
+		})
 	}
 
 	/**
@@ -163,6 +197,7 @@ export class ZgsmAuthService {
 
 			if (++attempt > maxAttempt) {
 				vscode.window.showInformationMessage("登录超时！")
+				return
 			}
 
 			// 设置轮询间隔（每5秒检查一次）
@@ -176,10 +211,23 @@ export class ZgsmAuthService {
 	/**
 	 * 停止轮询
 	 */
+	private stopStartLoginTokenPoll(): void {
+		if (this.startLoginTokenPollInterval) {
+			clearInterval(this.startLoginTokenPollInterval)
+			this.startLoginTokenPollInterval = undefined
+		}
+	}
 	private stopWaitLoginPolling(): void {
 		if (this.waitLoginPollingInterval) {
-			clearInterval(this.waitLoginPollingInterval)
+			clearTimeout(this.waitLoginPollingInterval)
 			this.waitLoginPollingInterval = undefined
+		}
+	}
+
+	private stopRefreshToken(): void {
+		if (this.tokenRefreshInterval) {
+			clearInterval(this.tokenRefreshInterval)
+			this.tokenRefreshInterval = undefined
 		}
 	}
 
@@ -188,10 +236,8 @@ export class ZgsmAuthService {
 	 */
 	startTokenRefresh(refreshToken: string, machineId: string, state: string): void {
 		// 清除之前的定时器
-		if (this.tokenRefreshInterval) {
-			clearInterval(this.tokenRefreshInterval)
-		}
-
+		this.stopRefreshToken()
+		if (this.disposed) return
 		// 定时刷新一次token
 		this.tokenRefreshInterval = setInterval(
 			async (refreshToken, machineId, state) => {
@@ -255,7 +301,7 @@ export class ZgsmAuthService {
 		try {
 			const tokens = await this.storage.getTokens()
 
-			const loginState = await this.storage.getLoginState()
+			// const loginState = await this.storage.getLoginState()
 
 			if (!tokens?.access_token || !tokens?.refresh_token) {
 				return false
@@ -265,12 +311,12 @@ export class ZgsmAuthService {
 			// const newTokens = await this.refreshToken(tokens.refresh_token, vscode.env.machineId, tokens.state, false)
 			const result = await retryWrapper(
 				"checkLoginStatusOnStartup",
-				() => this.api.getRefreshUserToken(tokens.refresh_token, machineId, tokens.state),
+				() => this.api.getUserLoginState(tokens.state, tokens.access_token),
 				() => 1000,
 				2,
 			)
 
-			if (!result?.data?.refresh_token) {
+			if (result.data?.status !== AuthStatus.LOGGED_IN) {
 				console.error("请求返回缺少 refresh_token")
 
 				return false
@@ -298,11 +344,9 @@ export class ZgsmAuthService {
 	 */
 	async logout(): Promise<void> {
 		// 停止所有定时器
+		this.stopStartLoginTokenPoll()
 		this.stopWaitLoginPolling()
-		if (this.tokenRefreshInterval) {
-			clearInterval(this.tokenRefreshInterval)
-			this.tokenRefreshInterval = undefined
-		}
+		this.stopRefreshToken()
 
 		// 触发登出事件
 		await this.onLogout()
@@ -388,9 +432,9 @@ export class ZgsmAuthService {
 	 * 销毁服务
 	 */
 	dispose(): void {
+		this.disposed = true
+		this.stopStartLoginTokenPoll()
 		this.stopWaitLoginPolling()
-		if (this.tokenRefreshInterval) {
-			clearInterval(this.tokenRefreshInterval)
-		}
+		this.stopRefreshToken()
 	}
 }

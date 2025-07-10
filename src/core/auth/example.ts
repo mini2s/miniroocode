@@ -6,6 +6,7 @@
 
 import * as vscode from "vscode"
 import { ZgsmAuthService, AuthCommands, AuthConfig } from "./index"
+import { ClineProvider } from "../webview/ClineProvider"
 
 /**
  * 示例：在插件激活时初始化认证服务
@@ -38,8 +39,8 @@ export function initializeAuthService(context: vscode.ExtensionContext) {
  * 示例：自定义认证服务
  */
 export class CustomAuthService extends ZgsmAuthService {
-	constructor() {
-		super()
+	constructor(clineProvider: ClineProvider) {
+		super(clineProvider)
 	}
 
 	/**

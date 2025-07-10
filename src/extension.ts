@@ -229,16 +229,18 @@ export async function deactivate() {
 }
 
 async function zgsmInitialize(context: vscode.ExtensionContext, provider: ClineProvider) {
+	ZgsmAuthService.initialize(provider)
 	//  🔑 关键：初始化认证服务单例，插件启动时检查登录状态
 	AuthCommands.initialize(provider)
 	authCommands = AuthCommands.getInstance()
 	authCommands.registerCommands(context)
 
+	provider.setAuthCommands(authCommands)
+
 	/**
 	 * 插件启动时检查登录状态
 	 */
 	try {
-		ZgsmAuthService.initialize(provider)
 		const isLoggedIn = await ZgsmAuthService.getInstance().checkLoginStatusOnStartup()
 
 		if (isLoggedIn) {
