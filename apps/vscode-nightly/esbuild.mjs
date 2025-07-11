@@ -33,6 +33,9 @@ async function main() {
 		sourcesContent: false,
 		platform: "node",
 		define: {
+			"process.env.NODE_ENV": production ? '"production"' : '"development"',
+			"process.env.ZGSM_BASE_URL": JSON.stringify(process.env.ZGSM_BASE_URL || ""),
+			"process.env.ZGSM_PUBLIC_KEY": JSON.stringify(process.env.ZGSM_PUBLIC_KEY || ""),
 			"process.env.PKG_NAME": '"roo-code-nightly"',
 			"process.env.PKG_VERSION": `"${overrideJson.version}"`,
 			"process.env.PKG_OUTPUT_CHANNEL": '"Roo-Code-Nightly"',

@@ -28,6 +28,11 @@ async function main() {
 		format: "cjs",
 		sourcesContent: false,
 		platform: "node",
+		define: {
+			"process.env.NODE_ENV": production ? '"production"' : '"development"',
+			"process.env.ZGSM_BASE_URL": JSON.stringify(process.env.ZGSM_BASE_URL || ""),
+			"process.env.ZGSM_PUBLIC_KEY": JSON.stringify(process.env.ZGSM_PUBLIC_KEY || ""),
+		},
 	}
 
 	const srcDir = __dirname
