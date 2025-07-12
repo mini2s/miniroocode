@@ -72,15 +72,10 @@ export class ZgsmAuthCommands {
 	 */
 	public async handleLogin(): Promise<void> {
 		try {
-			// vscode.window.showInformationMessage('正在启动登录流程...');
-
 			const loginState = await this.authService.startLogin()
 			console.info(
 				`登录流程已启动，请在浏览器中完成登录。\nState: ${loginState.state}\nMachineId: ${loginState.machineId}`,
 			)
-			// vscode.window.showInformationMessage(
-			//   `登录流程已启动，请在浏览器中完成登录。\nState: ${loginState.state}\nMachineId: ${loginState.machineId}`
-			// );
 		} catch (error) {
 			vscode.window.showErrorMessage(`登录失败: ${error}`)
 		}

@@ -70,6 +70,7 @@ import { EMBEDDING_MODEL_PROFILES } from "../../shared/embeddingModels"
 import { ProfileValidator } from "../../shared/ProfileValidator"
 import { ZgsmAuthCommands } from "../zgsm-auth"
 import { getWorkspaceGitInfo } from "../../utils/git"
+import { getClientId } from "../../utils/getClientId"
 
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -1414,7 +1415,7 @@ export class ClineProvider
 		} = await this.getState()
 
 		const telemetryKey = process.env.POSTHOG_API_KEY
-		const machineId = vscode.env.machineId
+		const machineId = getClientId()
 		const mergedAllowedCommands = this.mergeAllowedCommands(allowedCommands)
 		const cwd = this.cwd
 

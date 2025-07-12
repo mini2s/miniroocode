@@ -44,6 +44,7 @@ import { startIPCServer, stopIPCServer } from "./core/zgsm-auth/ipc/server"
 import { connectIPC, disconnectIPC, onTokensUpdate } from "./core/zgsm-auth/ipc/client"
 import { initZgsmCodeBase } from "./core/codebase"
 import { ZgsmCodeBaseSyncService } from "./core/codebase/client"
+import { getClientId } from "./utils/getClientId"
 
 /**
  * Built using https://github.com/microsoft/vscode-webview-ui-toolkit
@@ -269,11 +270,7 @@ async function zgsmInitialize(context: vscode.ExtensionContext, provider: ClineP
 					}
 					initZgsmCodeBase(ZgsmAuthConfig.getInstance().getDefaultApiBaseUrl(), tokens.access_token)
 
-					ZgsmAuthService.getInstance().startTokenRefresh(
-						tokens.refresh_token,
-						vscode.env.machineId,
-						tokens.state,
-					)
+					ZgsmAuthService.getInstance().startTokenRefresh(tokens.refresh_token, getClientId(), tokens.state)
 					ZgsmAuthService.getInstance().updateUserInfo(tokens.access_token)
 				})
 			// 开始token刷新定时器

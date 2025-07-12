@@ -1,3 +1,4 @@
+import { getClientId } from "./../../../src/utils/getClientId"
 import { PostHog } from "posthog-node"
 import * as vscode from "vscode"
 
@@ -12,7 +13,7 @@ import { BaseTelemetryClient } from "./BaseTelemetryClient"
  */
 export class PostHogTelemetryClient extends BaseTelemetryClient {
 	private client: PostHog
-	private distinctId: string = vscode.env.machineId
+	private distinctId: string = getClientId()
 	// Git repository properties that should be filtered out
 	private readonly gitPropertyNames = ["repositoryUrl", "repositoryName", "defaultBranch"]
 

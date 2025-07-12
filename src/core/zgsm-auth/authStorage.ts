@@ -5,6 +5,7 @@ import { parseJwt } from "../../utils/zgsmUtils"
 import { sendTokens } from "./ipc/client"
 import { initZgsmCodeBase } from "../codebase"
 import { ZgsmAuthConfig } from "./authConfig"
+import { getClientId } from "../../utils/getClientId"
 // import { safeJsonParse } from "../../shared/safeJsonParse"
 
 export class ZgsmAuthStorage {
@@ -117,7 +118,7 @@ export class ZgsmAuthStorage {
 		if (!this.clineProvider) return null
 		const state = await this.clineProvider.getState()
 		return state.apiConfiguration.zgsmState
-			? { state: state.apiConfiguration.zgsmState, machineId: vscode.env.machineId }
+			? { state: state.apiConfiguration.zgsmState, machineId: getClientId() }
 			: null
 	}
 

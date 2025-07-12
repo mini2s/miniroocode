@@ -1,5 +1,6 @@
 import * as vscode from "vscode"
 import { getLocalIP, parseJwt, createHeaders } from "../../utils/zgsmUtils"
+import { getClientId } from "../../utils/getClientId"
 
 // import { Package } from "../../shared/package"
 export class ZgsmAuthConfig {
@@ -40,12 +41,12 @@ export class ZgsmAuthConfig {
 	/**
 	 * 获取token刷新间隔时间（毫秒）
 	 */
-	public getTokenRefreshInterval(refreshToken?: string): number {
+	public getTokenRefreshInterval(refreshToken?: string, min = 3): number {
 		if (!refreshToken) return 24 * 60 * 60 * 1000 // 24h
 
 		const { exp } = parseJwt(refreshToken)
 		const refreshInterval = Math.min((exp - 1800) * 1000 - Date.now(), 2147483647)
-		return refreshInterval > 0 ? refreshInterval : 3000
+		return refreshInterval > 0 ? refreshInterval : min * 1000
 	}
 
 	/**
@@ -63,7 +64,7 @@ export class ZgsmAuthConfig {
 	}
 
 	public getClientId(): string {
-		return "vscode"
+		return getClientId()
 	}
 
 	public getClientSecret(): string {

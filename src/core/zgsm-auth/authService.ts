@@ -7,6 +7,7 @@ import type { ClineProvider } from "../webview/ClineProvider"
 import { getParams, parseJwt, retryWrapper } from "../../utils/zgsmUtils"
 import { joinUrl } from "../../utils/joinUrl"
 import { ZgsmAuthStatus, ZgsmAuthTokens, ZgsmLoginState, ZgsmUserInfo } from "./types"
+import { getClientId } from "../../utils/getClientId"
 
 export class ZgsmAuthService {
 	private static instance: ZgsmAuthService
@@ -183,7 +184,7 @@ export class ZgsmAuthService {
 					// 开始token刷新定时器
 					this.startTokenRefresh(
 						loginState.refresh_token,
-						loginState.machineId || vscode.env.machineId,
+						loginState.machineId || getClientId(),
 						loginState.state,
 					)
 
@@ -386,7 +387,7 @@ export class ZgsmAuthService {
 	 */
 	private getMachineId(): string {
 		// 使用VSCode的机器ID或生成一个唯一标识
-		return vscode.env.machineId
+		return getClientId()
 	}
 
 	/**

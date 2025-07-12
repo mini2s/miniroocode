@@ -2,10 +2,11 @@ import os from "os"
 
 import * as vscode from "vscode"
 import { Package } from "../shared/package"
+import { getClientId } from "./getClientId"
 
 export function getParams(state: string, ignore: string[] = []) {
 	return [
-		["machine_code", vscode.env.machineId],
+		["machine_code", getClientId()],
 		["state", state],
 		["provider", "casdoor"],
 		["plugin_version", "1.5.3"],
