@@ -5,7 +5,7 @@
  */
 
 import * as vscode from "vscode"
-import { ZgsmAuthService, AuthCommands, AuthConfig } from "./index"
+import { ZgsmAuthService, ZgsmAuthCommands, ZgsmAuthConfig } from "./index"
 import { ClineProvider } from "../webview/ClineProvider"
 
 /**
@@ -16,10 +16,10 @@ export function initializeAuthService(context: vscode.ExtensionContext) {
 	const authService = ZgsmAuthService.getInstance()
 
 	// 创建命令处理器
-	const authCommands = AuthCommands.getInstance()
+	const zgsmAuthCommands = ZgsmAuthCommands.getInstance()
 
 	// 注册认证相关命令
-	authCommands.registerCommands(context)
+	zgsmAuthCommands.registerCommands(context)
 
 	// 插件启动时检查登录状态
 	authService.checkLoginStatusOnStartup().then((isLoggedIn: boolean) => {
@@ -32,7 +32,7 @@ export function initializeAuthService(context: vscode.ExtensionContext) {
 		}
 	})
 
-	return { authService, authCommands }
+	return { authService, zgsmAuthCommands }
 }
 
 /**
@@ -81,7 +81,7 @@ export class CustomAuthService extends ZgsmAuthService {
  * 可以通过继承AuthConfig类来重写相关方法
  */
 export async function configureAuthService() {
-	const config = AuthConfig.getInstance()
+	const config = ZgsmAuthConfig.getInstance()
 
 	// 获取默认配置
 	const loginBaseUrl = config.getDefaultLoginBaseUrl()

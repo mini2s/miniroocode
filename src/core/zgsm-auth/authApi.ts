@@ -1,30 +1,30 @@
 // import * as vscode from 'vscode';
 import * as querystring from "querystring"
 
-import { AuthConfig } from "./authConfig"
+import { ZgsmAuthConfig } from "./authConfig"
 import type { ProviderSettings } from "@roo-code/types"
 import type { ClineProvider } from "../webview/ClineProvider"
-import { AuthTokens, LoginState } from "./types"
+import { ZgsmAuthTokens, ZgsmLoginState } from "./types"
 // import { Package } from "../../shared/package"
 // import { createHeaders, getParams } from "../../utils/zgsmUtils"
 import { getParams } from "../../utils/zgsmUtils"
 import { joinUrl } from "../../utils/joinUrl"
 
-export interface LoginResponse {
+export interface ZgsmLoginResponse {
 	success: boolean
-	data?: LoginState
+	data?: ZgsmLoginState
 	message?: string
 	code?: string
 }
 
 export interface LoginTokenResponse {
 	success: boolean
-	data?: AuthTokens
+	data?: ZgsmAuthTokens
 	message?: string
 	code?: string
 }
-export class AuthApi {
-	private config: AuthConfig
+export class ZgsmAuthApi {
+	private config: ZgsmAuthConfig
 	private clineProvider?: ClineProvider
 	loginUrl = "/oidc-auth/api/v1/plugin/login"
 	tokenUrl = "/oidc-auth/api/v1/plugin/login/token"
@@ -32,7 +32,7 @@ export class AuthApi {
 	logoutUrl = `/oidc-auth/api/v1/plugin/logout`
 
 	constructor(clineProvider?: ClineProvider) {
-		this.config = AuthConfig.getInstance()
+		this.config = ZgsmAuthConfig.getInstance()
 		this.clineProvider = clineProvider
 	}
 
@@ -100,7 +100,7 @@ export class AuthApi {
 	/**
 	 * 获取用户登录状态
 	 */
-	async getUserLoginState(state: string, access_token: string): Promise<LoginResponse> {
+	async getUserLoginState(state: string, access_token: string): Promise<ZgsmLoginResponse> {
 		try {
 			const baseUrl = await this.getApiBaseUrl()
 			const params = getParams(state, [access_token ? "machine_code" : ""])
@@ -117,7 +117,7 @@ export class AuthApi {
 			}
 
 			const data = await response.json()
-			return data as LoginResponse
+			return data as ZgsmLoginResponse
 		} catch (error) {
 			console.error("[getUserLoginState] 获取登录状态失败:", error)
 			throw error

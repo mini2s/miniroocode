@@ -1,21 +1,21 @@
 import * as vscode from "vscode"
-import { AuthStorage } from "./authStorage"
-import { AuthApi, LoginTokenResponse } from "./authApi"
-import { AuthConfig } from "./authConfig"
+import { ZgsmAuthStorage } from "./authStorage"
+import { ZgsmAuthApi, LoginTokenResponse } from "./authApi"
+import { ZgsmAuthConfig } from "./authConfig"
 import type { ProviderSettings } from "@roo-code/types"
 import type { ClineProvider } from "../webview/ClineProvider"
 import { getParams, parseJwt, retryWrapper } from "../../utils/zgsmUtils"
 import { joinUrl } from "../../utils/joinUrl"
-import { AuthStatus, AuthTokens, LoginState, ZgsmUserInfo } from "./types"
+import { ZgsmAuthStatus, ZgsmAuthTokens, ZgsmLoginState, ZgsmUserInfo } from "./types"
 
 export class ZgsmAuthService {
 	private static instance: ZgsmAuthService
 	private static hasStatusBarLoginTip = false
 
-	private storage: AuthStorage
-	private api: AuthApi
-	private loginStateTmp: LoginState | undefined
-	private config: AuthConfig
+	private storage: ZgsmAuthStorage
+	private api: ZgsmAuthApi
+	private loginStateTmp: ZgsmLoginState | undefined
+	private config: ZgsmAuthConfig
 	private waitLoginPollingInterval?: NodeJS.Timeout
 	private tokenRefreshInterval?: NodeJS.Timeout
 	private startLoginTokenPollInterval?: NodeJS.Timeout
@@ -24,12 +24,12 @@ export class ZgsmAuthService {
 	private userInfo = {} as ZgsmUserInfo
 
 	protected constructor(clineProvider: ClineProvider) {
-		this.storage = AuthStorage.getInstance()
+		this.storage = ZgsmAuthStorage.getInstance()
 		if (clineProvider) {
 			this.storage.setClineProvider(clineProvider)
 		}
-		this.api = new AuthApi(clineProvider)
-		this.config = AuthConfig.getInstance() // 使用单例
+		this.api = new ZgsmAuthApi(clineProvider)
+		this.config = ZgsmAuthConfig.getInstance() // 使用单例
 		this.clineProvider = clineProvider
 	}
 
@@ -87,7 +87,7 @@ export class ZgsmAuthService {
 	/**
 	 * 启动登录流程
 	 */
-	async startLogin(): Promise<LoginState> {
+	async startLogin(): Promise<ZgsmLoginState> {
 		this.stopWaitLoginPolling()
 		this.stopRefreshToken()
 		this.stopStartLoginTokenPoll()
@@ -155,7 +155,7 @@ export class ZgsmAuthService {
 	/**
 	 * 开始轮询登录状态
 	 */
-	private async startWaitLoginPolling(loginState: LoginState & AuthTokens): Promise<void> {
+	private async startWaitLoginPolling(loginState: ZgsmLoginState & ZgsmAuthTokens): Promise<void> {
 		const maxAttempt = 60
 		let attempt = 0
 		const pollLoginState = async () => {
@@ -171,7 +171,7 @@ export class ZgsmAuthService {
 					success &&
 					data?.state &&
 					data.state === this.loginStateTmp?.state &&
-					data?.status === AuthStatus.LOGGED_IN
+					data?.status === ZgsmAuthStatus.LOGGED_IN
 				) {
 					// 登录成功，保存token
 					await this.storage.saveTokens(loginState)
@@ -259,7 +259,7 @@ export class ZgsmAuthService {
 	/**
 	 * 刷新token
 	 */
-	async refreshToken(refreshToken: string, machineId: string, state: string, auto = true): Promise<AuthTokens> {
+	async refreshToken(refreshToken: string, machineId: string, state: string, auto = true): Promise<ZgsmAuthTokens> {
 		try {
 			const { success, data, message } = await retryWrapper("refreshToken", () =>
 				this.api.getRefreshUserToken(refreshToken, machineId, state),
@@ -293,7 +293,7 @@ export class ZgsmAuthService {
 	async getTokens() {
 		return await this.storage.getTokens()
 	}
-	async saveTokens(tokens: AuthTokens) {
+	async saveTokens(tokens: ZgsmAuthTokens) {
 		return await this.storage.saveTokens(tokens)
 	}
 
@@ -343,7 +343,7 @@ export class ZgsmAuthService {
 	/**
 	 * 生成登录状态参数
 	 */
-	private generateLoginState(): LoginState {
+	private generateLoginState(): ZgsmLoginState {
 		return {
 			state: this.generateRandomString(),
 			machineId: this.getMachineId(),
@@ -353,7 +353,7 @@ export class ZgsmAuthService {
 	/**
 	 * 构建登录URL
 	 */
-	private async buildLoginUrl(loginState: LoginState): Promise<string> {
+	private async buildLoginUrl(loginState: ZgsmLoginState): Promise<string> {
 		const apiConfig = await this.getApiConfiguration()
 		const baseUrl = this.getLoginBaseUrl(apiConfig)
 		const params = getParams(loginState.state, [])
@@ -392,7 +392,7 @@ export class ZgsmAuthService {
 	/**
 	 * 登录成功回调
 	 */
-	protected onLoginSuccess(tokens: AuthTokens): void {
+	protected onLoginSuccess(tokens: ZgsmAuthTokens): void {
 		this.updateUserInfo(tokens.refresh_token)
 		vscode.window.showInformationMessage(`${this.userInfo.name}用户登录成功`)
 	}

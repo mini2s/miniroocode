@@ -2,18 +2,18 @@ import * as vscode from "vscode"
 import { getLocalIP, parseJwt, createHeaders } from "../../utils/zgsmUtils"
 
 // import { Package } from "../../shared/package"
-export class AuthConfig {
-	private static instance: AuthConfig
+export class ZgsmAuthConfig {
+	private static instance: ZgsmAuthConfig
 
 	private constructor() {
 		// 私有构造函数，防止外部 new
 	}
 
-	public static getInstance(): AuthConfig {
-		if (!AuthConfig.instance) {
-			AuthConfig.instance = new AuthConfig()
+	public static getInstance(): ZgsmAuthConfig {
+		if (!ZgsmAuthConfig.instance) {
+			ZgsmAuthConfig.instance = new ZgsmAuthConfig()
 		}
-		return AuthConfig.instance
+		return ZgsmAuthConfig.instance
 	}
 
 	/**

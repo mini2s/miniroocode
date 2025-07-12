@@ -7,11 +7,11 @@ import { CloudUserInfo } from "@roo-code/types"
 /**
  * 登录状态接口
  */
-export interface LoginState {
+export interface ZgsmLoginState {
 	/** 登录状态标识符 */
 	state: string
 
-	status?: AuthStatus
+	status?: ZgsmAuthStatus
 
 	/** 机器标识符 */
 	machineId?: string
@@ -20,7 +20,7 @@ export interface LoginState {
 /**
  * 认证Token接口
  */
-export interface AuthTokens {
+export interface ZgsmAuthTokens {
 	/** 访问令牌 */
 	access_token: string
 	/** 刷新令牌 */
@@ -32,11 +32,11 @@ export interface AuthTokens {
 /**
  * 登录响应接口
  */
-export interface LoginResponse {
+export interface ZgsmLoginResponse {
 	/** 是否成功 */
 	success: boolean
 	/** 认证令牌（成功时返回） */
-	tokens?: AuthTokens
+	tokens?: ZgsmAuthTokens
 	/** 错误信息（失败时返回） */
 	error?: string
 }
@@ -44,7 +44,7 @@ export interface LoginResponse {
 /**
  * 认证状态枚举
  */
-export enum AuthStatus {
+export enum ZgsmAuthStatus {
 	/** 未登录 */
 	NOT_LOGGED_IN = "not_logged_in",
 	/** 登录中 */

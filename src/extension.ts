@@ -30,7 +30,7 @@ import { MdmService } from "./services/mdm/MdmService"
 import { migrateSettings } from "./utils/migrateSettings"
 import { autoImportSettings } from "./utils/autoImportSettings"
 import { API } from "./extension/api"
-import { AuthCommands, AuthConfig, ZgsmAuthService } from "./core/auth/index"
+import { ZgsmAuthCommands, ZgsmAuthConfig, ZgsmAuthService } from "./core/zgsm-auth/index"
 
 import {
 	handleUri,
@@ -40,8 +40,8 @@ import {
 	CodeActionProvider,
 } from "./activate"
 import { initializeI18n } from "./i18n"
-import { startIPCServer, stopIPCServer } from "./core/auth/ipc/server"
-import { connectIPC, disconnectIPC, onTokensUpdate } from "./core/auth/ipc/client"
+import { startIPCServer, stopIPCServer } from "./core/zgsm-auth/ipc/server"
+import { connectIPC, disconnectIPC, onTokensUpdate } from "./core/zgsm-auth/ipc/client"
 import { initZgsmCodeBase } from "./core/codebase"
 import { ZgsmCodeBaseSyncService } from "./core/codebase/client"
 
@@ -55,7 +55,7 @@ import { ZgsmCodeBaseSyncService } from "./core/codebase/client"
 
 let outputChannel: vscode.OutputChannel
 let extensionContext: vscode.ExtensionContext
-let authCommands: AuthCommands
+let zgsmAuthCommands: ZgsmAuthCommands
 
 // This method is called when your extension is activated.
 // Your extension is activated the very first time the command is executed.
@@ -245,13 +245,13 @@ async function zgsmInitialize(context: vscode.ExtensionContext, provider: ClineP
 		}),
 	)
 	//  🔑 关键：初始化认证服务单例，插件启动时检查登录状态
-	AuthCommands.initialize(provider)
-	context.subscriptions.push(AuthCommands.getInstance())
+	ZgsmAuthCommands.initialize(provider)
+	context.subscriptions.push(ZgsmAuthCommands.getInstance())
 
-	authCommands = AuthCommands.getInstance()
-	authCommands.registerCommands(context)
+	zgsmAuthCommands = ZgsmAuthCommands.getInstance()
+	zgsmAuthCommands.registerCommands(context)
 
-	provider.setAuthCommands(authCommands)
+	provider.setZgsmAuthCommands(zgsmAuthCommands)
 
 	/**
 	 * 插件启动时检查登录状态
@@ -267,7 +267,7 @@ async function zgsmInitialize(context: vscode.ExtensionContext, provider: ClineP
 					if (!tokens) {
 						return
 					}
-					initZgsmCodeBase(AuthConfig.getInstance().getDefaultApiBaseUrl(), tokens.access_token)
+					initZgsmCodeBase(ZgsmAuthConfig.getInstance().getDefaultApiBaseUrl(), tokens.access_token)
 
 					ZgsmAuthService.getInstance().startTokenRefresh(
 						tokens.refresh_token,

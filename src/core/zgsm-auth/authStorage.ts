@@ -1,36 +1,36 @@
 import * as vscode from "vscode"
-import type { AuthTokens, LoginState } from "./types"
+import type { ZgsmAuthTokens, ZgsmLoginState } from "./types"
 import type { ClineProvider } from "../webview/ClineProvider"
 import { parseJwt } from "../../utils/zgsmUtils"
 import { sendTokens } from "./ipc/client"
 import { initZgsmCodeBase } from "../codebase"
-import { AuthConfig } from "./authConfig"
+import { ZgsmAuthConfig } from "./authConfig"
 // import { safeJsonParse } from "../../shared/safeJsonParse"
 
-export class AuthStorage {
+export class ZgsmAuthStorage {
 	private clineProvider?: ClineProvider
-	private static instance?: AuthStorage
+	private static instance?: ZgsmAuthStorage
 
 	constructor(clineProvider?: ClineProvider) {
 		this.clineProvider = clineProvider
 	}
 
 	public static initialize(clineProvider?: ClineProvider): void {
-		if (!AuthStorage.instance) {
-			AuthStorage.instance = new AuthStorage(clineProvider)
+		if (!ZgsmAuthStorage.instance) {
+			ZgsmAuthStorage.instance = new ZgsmAuthStorage(clineProvider)
 		}
 	}
-	public static getInstance(): AuthStorage {
-		if (!AuthStorage.instance) {
-			AuthStorage.instance = new AuthStorage()
+	public static getInstance(): ZgsmAuthStorage {
+		if (!ZgsmAuthStorage.instance) {
+			ZgsmAuthStorage.instance = new ZgsmAuthStorage()
 		}
-		return AuthStorage.instance
+		return ZgsmAuthStorage.instance
 	}
 
 	/**
 	 * 设置ClineProvider实例
 	 */
-	setClineProvider(clineProvider: ClineProvider): AuthStorage {
+	setClineProvider(clineProvider: ClineProvider): ZgsmAuthStorage {
 		this.clineProvider = clineProvider
 		return this
 	}
@@ -38,7 +38,7 @@ export class AuthStorage {
 	/**
 	 * 保存认证token
 	 */
-	async saveTokens(tokens: AuthTokens): Promise<void> {
+	async saveTokens(tokens: ZgsmAuthTokens): Promise<void> {
 		if (!this.clineProvider) return
 		const state = await this.clineProvider.getState()
 		if (!state.currentApiConfigName) {
@@ -76,7 +76,7 @@ export class AuthStorage {
 		sendTokens(tokens)
 
 		initZgsmCodeBase(
-			state.apiConfiguration.zgsmBaseUrl || AuthConfig.getInstance().getDefaultApiBaseUrl(),
+			state.apiConfiguration.zgsmBaseUrl || ZgsmAuthConfig.getInstance().getDefaultApiBaseUrl(),
 			tokens.access_token,
 		)
 	}
@@ -84,20 +84,20 @@ export class AuthStorage {
 	/**
 	 * 获取保存的认证token
 	 */
-	async getTokens(): Promise<AuthTokens | null> {
+	async getTokens(): Promise<ZgsmAuthTokens | null> {
 		if (!this.clineProvider) return null
 		const state = await this.clineProvider.getState()
 		return {
 			access_token: state.apiConfiguration.zgsmAccessToken,
 			refresh_token: state.apiConfiguration.zgsmRefreshToken,
 			state: state.apiConfiguration.zgsmState,
-		} as AuthTokens
+		} as ZgsmAuthTokens
 	}
 
 	/**
 	 * 保存登录状态
 	 */
-	async saveLoginState(loginState: LoginState): Promise<void> {
+	async saveLoginState(loginState: ZgsmLoginState): Promise<void> {
 		if (!this.clineProvider) return
 		const state = await this.clineProvider.getState()
 		if (!state.currentApiConfigName) {
@@ -113,7 +113,7 @@ export class AuthStorage {
 	/**
 	 * 获取保存的登录状态
 	 */
-	async getLoginState(): Promise<LoginState | null> {
+	async getLoginState(): Promise<ZgsmLoginState | null> {
 		if (!this.clineProvider) return null
 		const state = await this.clineProvider.getState()
 		return state.apiConfiguration.zgsmState

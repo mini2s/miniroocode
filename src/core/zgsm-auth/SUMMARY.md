@@ -8,7 +8,7 @@ src/services/auth/
 ├── authStorage.ts      # 本地存储管理
 ├── authApi.ts          # API通信接口
 ├── authConfig.ts       # 配置管理
-├── authCommands.ts     # VSCode命令处理器
+├── zgsmAuthCommands.ts     # VSCode命令处理器
 ├── types.ts           # 类型定义
 ├── index.ts           # 模块导出
 ├── example.ts         # 使用示例
@@ -51,7 +51,7 @@ src/services/auth/
 ```typescript
 class AuthService {
 	// 启动登录流程
-	async startLogin(): Promise<LoginState>
+	async startLogin(): Promise<ZgsmLoginState>
 
 	// 检查登录状态
 	async checkLoginStatusOnStartup(): Promise<boolean>
@@ -60,7 +60,7 @@ class AuthService {
 	async getCurrentAccessToken(): Promise<string | null>
 
 	// 刷新token
-	async refreshToken(refreshToken: string, machineId: string, state: string): Promise<AuthTokens>
+	async refreshToken(refreshToken: string, machineId: string, state: string): Promise<ZgsmAuthTokens>
 
 	// 登出
 	async logout(): Promise<void>
@@ -70,32 +70,32 @@ class AuthService {
 }
 ```
 
-### AuthStorage（存储管理）
+### ZgsmAuthStorage（存储管理）
 
 ```typescript
-class AuthStorage {
+class ZgsmAuthStorage {
 	// 保存/获取token
-	async saveTokens(tokens: AuthTokens): Promise<void>
-	async getTokens(): Promise<AuthTokens | null>
+	async saveTokens(tokens: ZgsmAuthTokens): Promise<void>
+	async getTokens(): Promise<ZgsmAuthTokens | null>
 
 	// 保存/获取登录状态
-	async saveLoginState(loginState: LoginState): Promise<void>
-	async getLoginState(): Promise<LoginState | null>
+	async saveLoginState(loginState: ZgsmLoginState): Promise<void>
+	async getLoginState(): Promise<ZgsmLoginState | null>
 
 	// 清理所有数据
 	async clearAll(): Promise<void>
 }
 ```
 
-### AuthApi（API通信）
+### ZgsmAuthApi（API通信）
 
 ```typescript
-class AuthApi {
+class ZgsmAuthApi {
 	// 获取登录状态
-	async getUserLoginState(state: string, machineId: string): Promise<LoginResponse>
+	async getUserLoginState(state: string, machineId: string): Promise<ZgsmLoginResponse>
 
 	// 刷新token
-	async getRefreshUserToken(refreshToken: string, machineId: string, state: string): Promise<LoginResponse>
+	async getRefreshUserToken(refreshToken: string, machineId: string, state: string): Promise<ZgsmLoginResponse>
 
 	// 验证token
 	async validateToken(token: string): Promise<boolean>
@@ -110,26 +110,26 @@ class AuthApi {
 ### 1. 在extension.ts中集成
 
 ```typescript
-import { AuthCommands } from "./services/auth"
+import { ZgsmAuthCommands } from "./services/auth"
 
 export function activate(context: vscode.ExtensionContext) {
 	// 注册认证命令
-	const authCommands = new AuthCommands()
-	authCommands.registerCommands(context)
+	const zgsmAuthCommands = new ZgsmAuthCommands()
+	zgsmAuthCommands.registerCommands(context)
 }
 ```
 
 ### 2. 在registerCommands.ts中集成
 
 ```typescript
-import { AuthCommands } from "../services/auth"
+import { ZgsmAuthCommands } from "../services/auth"
 
 export const registerCommands = (options: RegisterCommandOptions) => {
 	const { context } = options
 
 	// 注册认证相关命令
-	const authCommands = new AuthCommands()
-	authCommands.registerCommands(context)
+	const zgsmAuthCommands = new ZgsmAuthCommands()
+	zgsmAuthCommands.registerCommands(context)
 
 	// ... 其他命令注册
 }

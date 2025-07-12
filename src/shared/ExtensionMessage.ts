@@ -18,7 +18,7 @@ import { McpServer } from "./mcp"
 import { Mode } from "./modes"
 import { RouterModels } from "./api"
 import type { MarketplaceItem } from "@roo-code/types"
-import { ZgsmUserInfo } from "../core/auth"
+import { ZgsmUserInfo } from "../core/zgsm-auth"
 
 // Type for marketplace installed metadata
 export interface MarketplaceInstalledMetadata {

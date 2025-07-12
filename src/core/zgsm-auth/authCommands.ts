@@ -2,8 +2,8 @@ import * as vscode from "vscode"
 import { ZgsmAuthService } from "./authService"
 import type { ClineProvider } from "../webview/ClineProvider"
 
-export class AuthCommands {
-	private static instance: AuthCommands
+export class ZgsmAuthCommands {
+	private static instance: ZgsmAuthCommands
 	private authService: ZgsmAuthService
 	private clineProvider: ClineProvider
 
@@ -17,18 +17,18 @@ export class AuthCommands {
 	}
 
 	public static initialize(clineProvider: ClineProvider): void {
-		if (!AuthCommands.instance) {
+		if (!ZgsmAuthCommands.instance) {
 			// 优先初始化依赖的服务
-			AuthCommands.instance = new AuthCommands(clineProvider)
+			ZgsmAuthCommands.instance = new ZgsmAuthCommands(clineProvider)
 		}
 	}
 
-	public static getInstance(): AuthCommands {
-		if (!AuthCommands.instance) {
+	public static getInstance(): ZgsmAuthCommands {
+		if (!ZgsmAuthCommands.instance) {
 			// 在实际应用中，initialize应该已经被调用。
-			throw new Error("AuthCommands 未初始化")
+			throw new Error("ZgsmAuthCommands 未初始化")
 		}
-		return AuthCommands.instance!
+		return ZgsmAuthCommands.instance!
 	}
 
 	/**

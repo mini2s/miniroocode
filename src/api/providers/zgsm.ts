@@ -24,7 +24,7 @@ import { getModelParams } from "../transform/model-params"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import { AuthConfig, ZgsmAuthService } from "../../core/auth"
+import { ZgsmAuthConfig, ZgsmAuthService } from "../../core/zgsm-auth"
 import { getZgsmSelectedModelInfo } from "../../shared/getZgsmSelectedModelInfo"
 // TODO: Rename this to OpenAICompatibleHandler. Also, I think the
 // `OpenAINativeHandler` can subclass from this, since it's obviously
@@ -38,7 +38,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		super()
 		this.options = options
 
-		this.baseURL = `${this.options.zgsmBaseUrl ?? AuthConfig.getInstance().getDefaultApiBaseUrl()}/chat-rag/api/v1`
+		this.baseURL = `${this.options.zgsmBaseUrl ?? ZgsmAuthConfig.getInstance().getDefaultApiBaseUrl()}/chat-rag/api/v1`
 		const apiKey = options.zgsmAccessToken ?? "not-provided"
 		const isAzureAiInference = this._isAzureAiInference(this.baseURL)
 		const urlHost = this._getUrlHost(this.baseURL)

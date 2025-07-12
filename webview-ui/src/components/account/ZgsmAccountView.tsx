@@ -7,7 +7,7 @@ import { TelemetryEventName } from "@roo-code/types"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { vscode } from "@src/utils/vscode"
 import { telemetryClient } from "@src/utils/TelemetryClient"
-import { ZgsmUserInfo } from "../../../../src/core/auth"
+import { ZgsmUserInfo } from "../../../../src/core/zgsm-auth"
 import axios from "axios"
 
 type AccountViewProps = {

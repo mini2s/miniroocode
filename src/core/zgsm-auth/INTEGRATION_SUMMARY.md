@@ -10,7 +10,7 @@
 
 ```typescript
 // 在extension.ts中
-import { AuthCommands } from "./services/auth"
+import { ZgsmAuthCommands } from "./services/auth"
 
 export async function activate(context: vscode.ExtensionContext) {
 	// ... 其他初始化代码 ...
@@ -18,8 +18,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, codeIndexManager, mdmService)
 
 	// 🔑 关键：初始化认证服务，传入ClineProvider实例
-	const authCommands = new AuthCommands(provider)
-	authCommands.registerCommands(context)
+	const zgsmAuthCommands = new ZgsmAuthCommands(provider)
+	zgsmAuthCommands.registerCommands(context)
 
 	// ... 其他代码 ...
 }
@@ -28,8 +28,8 @@ export async function deactivate() {
 	// ... 其他清理代码 ...
 
 	// 清理认证服务
-	if (authCommands) {
-		authCommands.dispose()
+	if (zgsmAuthCommands) {
+		zgsmAuthCommands.dispose()
 	}
 }
 ```
@@ -105,9 +105,9 @@ private async getApiConfiguration(): Promise<ProviderSettings> {
 ```typescript
 // AuthService构造函数接受ClineProvider实例
 constructor(clineProvider?: any) {
-  this.storage = new AuthStorage();
-  this.api = new AuthApi(clineProvider); // 传入ClineProvider
-  this.config = new AuthConfig();
+  this.storage = new ZgsmAuthStorage();
+  this.api = new ZgsmAuthApi(clineProvider); // 传入ClineProvider
+  this.config = new ZgsmAuthConfig();
   this.clineProvider = clineProvider;
 }
 ```

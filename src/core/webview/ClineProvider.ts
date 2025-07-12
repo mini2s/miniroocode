@@ -68,7 +68,7 @@ import { webviewMessageHandler } from "./webviewMessageHandler"
 import { WebviewMessage } from "../../shared/WebviewMessage"
 import { EMBEDDING_MODEL_PROFILES } from "../../shared/embeddingModels"
 import { ProfileValidator } from "../../shared/ProfileValidator"
-import { AuthCommands } from "../auth"
+import { ZgsmAuthCommands } from "../zgsm-auth"
 import { getWorkspaceGitInfo } from "../../utils/git"
 
 /**
@@ -108,7 +108,7 @@ export class ClineProvider
 	protected mcpHub?: McpHub // Change from private to protected
 	private marketplaceManager: MarketplaceManager
 	private mdmService?: MdmService
-	private authCommands?: AuthCommands
+	private zgsmAuthCommands?: ZgsmAuthCommands
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
@@ -1835,10 +1835,10 @@ export class ClineProvider
 		}
 	}
 
-	public getAuthCommands() {
-		return this.authCommands
+	public getZgsmAuthCommands() {
+		return this.zgsmAuthCommands
 	}
-	public setAuthCommands(authCommands: AuthCommands) {
-		this.authCommands = authCommands
+	public setZgsmAuthCommands(zgsmAuthCommands: ZgsmAuthCommands) {
+		this.zgsmAuthCommands = zgsmAuthCommands
 	}
 }

@@ -55,7 +55,7 @@ const ALLOWED_VSCODE_SETTINGS = new Set(["terminal.integrated.inheritEnv"])
 
 import { MarketplaceManager, MarketplaceItemType } from "../../services/marketplace"
 import { setPendingTodoList } from "../tools/updateTodoListTool"
-import { AuthConfig } from "../auth"
+import { ZgsmAuthConfig } from "../zgsm-auth"
 
 export const webviewMessageHandler = async (
 	provider: ClineProvider,
@@ -711,7 +711,7 @@ export const webviewMessageHandler = async (
 		case "requestZgsmModels":
 			if (message?.values?.apiKey) {
 				const openAiModels = await getZgsmModels(
-					message?.values?.baseUrl || AuthConfig.getInstance().getDefaultApiBaseUrl(),
+					message?.values?.baseUrl || ZgsmAuthConfig.getInstance().getDefaultApiBaseUrl(),
 					message?.values?.apiKey,
 					message?.values?.openAiHeaders,
 				)
@@ -2223,7 +2223,7 @@ export const webviewMessageHandler = async (
 		case "zgsmLogin": {
 			try {
 				TelemetryService.instance.captureEvent(TelemetryEventName.AUTHENTICATION_INITIATED)
-				await provider.getAuthCommands?.()?.handleLogin()
+				await provider.getZgsmAuthCommands?.()?.handleLogin()
 			} catch (error) {
 				provider.log(`AuthService#login failed: ${error}`)
 				vscode.window.showErrorMessage("Sign in failed.")
@@ -2233,7 +2233,7 @@ export const webviewMessageHandler = async (
 		}
 		case "zgsmLogout": {
 			try {
-				await provider.getAuthCommands?.()?.handleLogout()
+				await provider.getZgsmAuthCommands?.()?.handleLogout()
 				await provider.postStateToWebview()
 			} catch (error) {
 				provider.log(`AuthService#logout failed: ${error}`)
