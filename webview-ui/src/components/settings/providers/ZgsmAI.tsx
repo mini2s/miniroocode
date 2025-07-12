@@ -10,6 +10,7 @@ import {
 	type OrganizationAllowList,
 	azureOpenAiDefaultApiVersion,
 	openAiModelInfoSaneDefaults,
+	zgsmDefaultModelId,
 } from "@roo-code/types"
 
 import { ExtensionMessage } from "@roo/ExtensionMessage"
@@ -146,7 +147,7 @@ export const ZgsmAI = ({
 					<ModelPicker
 						apiConfiguration={apiConfiguration}
 						setApiConfigurationField={setApiConfigurationField}
-						defaultModelId="deepseek-v3"
+						defaultModelId={zgsmDefaultModelId}
 						models={openAiModels}
 						modelIdKey="zgsmModelId"
 						serviceName="zgsm"

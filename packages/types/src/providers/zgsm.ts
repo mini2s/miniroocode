@@ -12,6 +12,8 @@ import { vertexModels } from "./vertex.js"
 import { vscodeLlmModels } from "./vscode-llm.js"
 import { xaiModels } from "./xai.js"
 
+export const zgsmDefaultModelId = "deepseek-v3"
+
 export const zgsmModels = {
 	...anthropicModels,
 	...bedrockModels,

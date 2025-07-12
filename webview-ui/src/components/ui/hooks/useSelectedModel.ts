@@ -32,6 +32,7 @@ import {
 	litellmDefaultModelId,
 	claudeCodeDefaultModelId,
 	claudeCodeModels,
+	zgsmDefaultModelId,
 } from "@roo-code/types"
 
 import type { RouterModels } from "@roo/api"
@@ -57,7 +58,7 @@ export const useSelectedModel = (apiConfiguration?: ProviderSettings) => {
 					routerModels: routerModels.data,
 					openRouterModelProviders: openRouterModelProviders.data,
 				})
-			: { id: anthropicDefaultModelId, info: undefined }
+			: { id: zgsmDefaultModelId, info: undefined }
 
 	return {
 		provider,
@@ -84,7 +85,7 @@ function getSelectedModel({
 	// this gives a better UX than showing the default model
 	switch (provider) {
 		case "zgsm": {
-			const id = apiConfiguration.zgsmModelId ?? "deepseek-v3"
+			const id = apiConfiguration.zgsmModelId ?? zgsmDefaultModelId
 			const info = getZgsmSelectedModelInfo(id)
 			return { id, info }
 		}

@@ -197,7 +197,7 @@ const ApiConfigManager = ({
 							}}
 							className="grow"
 						/>
-						<StandardTooltip content={t("settings:common.save")}>
+						<StandardTooltip content={t("settings:common.save" + "321")}>
 							<Button
 								variant="ghost"
 								size="icon"

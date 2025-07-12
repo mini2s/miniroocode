@@ -8,6 +8,7 @@ import {
 	openAiModelInfoSaneDefaults,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
 	OPENAI_AZURE_AI_INFERENCE_PATH,
+	zgsmDefaultModelId,
 } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
@@ -81,7 +82,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 	): ApiStream {
 		const { info: modelInfo, reasoning } = this.getModel()
 		const modelUrl = this.baseURL ?? ""
-		const modelId = this.options.zgsmModelId ?? "deepseek-v3"
+		const modelId = this.options.zgsmModelId ?? zgsmDefaultModelId
 		const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
 		const enabledLegacyFormat = this.options.openAiLegacyFormat ?? false
 		const isAzureAiInference = this._isAzureAiInference(modelUrl)
@@ -250,7 +251,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 	}
 
 	override getModel() {
-		const id = this.options.zgsmModelId ?? "deepseek-v3"
+		const id = this.options.zgsmModelId ?? zgsmDefaultModelId
 		const info = this.options.openAiCustomModelInfo ?? getZgsmSelectedModelInfo(id)
 		const params = getModelParams({ format: "zgsm", modelId: id, model: info, settings: this.options })
 		return { id, info, ...params }

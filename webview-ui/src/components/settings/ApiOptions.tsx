@@ -22,6 +22,7 @@ import {
 	chutesDefaultModelId,
 	bedrockDefaultModelId,
 	vertexDefaultModelId,
+	zgsmDefaultModelId,
 } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
@@ -281,6 +282,7 @@ const ApiOptions = ({
 				bedrock: { field: "apiModelId", default: bedrockDefaultModelId },
 				vertex: { field: "apiModelId", default: vertexDefaultModelId },
 				openai: { field: "openAiModelId" },
+				zgsm: { field: "zgsmModelId", default: zgsmDefaultModelId },
 				ollama: { field: "ollamaModelId" },
 				lmstudio: { field: "lmStudioModelId" },
 			}

@@ -66,7 +66,7 @@ import { About } from "./About"
 import { Section } from "./Section"
 import PromptsSettings from "./PromptsSettings"
 import { cn } from "@/lib/utils"
-
+import { isEqual } from "lodash-es"
 export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
 export const settingsTabList =
 	"w-48 data-[compact=true]:w-12 flex-shrink-0 flex flex-col overflow-y-auto overflow-x-hidden border-r border-vscode-sideBar-background"
@@ -77,7 +77,6 @@ export const settingsTabTriggerActive = "opacity-100 border-vscode-focusBorder b
 export interface SettingsViewRef {
 	checkUnsaveChanges: (then: () => void) => void
 }
-
 const sectionNames = [
 	"providers",
 	"autoApprove",
@@ -201,10 +200,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 	const setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType> = useCallback((field, value) => {
 		setCachedState((prevState) => {
-			if (prevState[field] === value) {
+			if (isEqual(prevState[field], value)) {
 				return prevState
 			}
-
+			// debugger
 			setChangeDetected(true)
 			return { ...prevState, [field]: value }
 		})
@@ -213,9 +212,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const setApiConfigurationField = useCallback(
 		<K extends keyof ProviderSettings>(field: K, value: ProviderSettings[K]) => {
 			setCachedState((prevState) => {
-				if (prevState.apiConfiguration?.[field] === value) {
+				if (isEqual(prevState.apiConfiguration?.[field], value)) {
 					return prevState
 				}
+				// debugger
 
 				setChangeDetected(true)
 				return { ...prevState, apiConfiguration: { ...prevState.apiConfiguration, [field]: value } }
@@ -226,9 +226,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 	const setExperimentEnabled: SetExperimentEnabled = useCallback((id: ExperimentId, enabled: boolean) => {
 		setCachedState((prevState) => {
-			if (prevState.experiments?.[id] === enabled) {
+			if (isEqual(prevState.experiments[id], enabled)) {
 				return prevState
 			}
+			// debugger
 
 			setChangeDetected(true)
 			return { ...prevState, experiments: { ...prevState.experiments, [id]: enabled } }
@@ -237,9 +238,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 	const setTelemetrySetting = useCallback((setting: TelemetrySetting) => {
 		setCachedState((prevState) => {
-			if (prevState.telemetrySetting === setting) {
+			if (isEqual(prevState.telemetrySetting, setting)) {
 				return prevState
 			}
+			// debugger
 
 			setChangeDetected(true)
 			return { ...prevState, telemetrySetting: setting }
@@ -248,9 +250,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 	const setCustomSupportPromptsField = useCallback((prompts: Record<string, string | undefined>) => {
 		setCachedState((prevState) => {
-			if (JSON.stringify(prevState.customSupportPrompts) === JSON.stringify(prompts)) {
+			if (isEqual(prevState.customSupportPrompts, prompts)) {
 				return prevState
 			}
+			// debugger
 
 			setChangeDetected(true)
 			return { ...prevState, customSupportPrompts: prompts }
@@ -452,6 +455,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					<h3 className="text-vscode-foreground m-0">{t("settings:header.title")}</h3>
 				</div>
 				<div className="flex gap-2">
+					<div>isSettingValid: {`value ${isSettingValid}`}</div>
+					<div>isChangeDetected: {`value ${isChangeDetected}`}</div>
+					<div>errorMessage: {`value ${errorMessage}`}</div>
 					<StandardTooltip
 						content={
 							!isSettingValid
@@ -466,7 +472,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							onClick={handleSubmit}
 							disabled={!isChangeDetected || !isSettingValid}
 							data-testid="save-button">
-							{t("settings:common.save")}
+							{t("settings:common.save")}123
 						</Button>
 					</StandardTooltip>
 					<StandardTooltip content={t("settings:header.doneButtonTooltip")}>
