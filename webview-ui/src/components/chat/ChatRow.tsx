@@ -155,6 +155,7 @@ export const ChatRowContent = ({
 
 		return [undefined, undefined, undefined]
 	}, [message.text, message.say])
+	console.log("apiRequestFailedMessage")
 
 	// When resuming task, last wont be api_req_failed but a resume_task
 	// message, so api_req_started will show loading spinner. That's why we just

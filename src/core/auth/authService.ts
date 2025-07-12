@@ -10,6 +10,7 @@ import { AuthStatus, AuthTokens, LoginState, ZgsmUserInfo } from "./types"
 
 export class ZgsmAuthService {
 	private static instance: ZgsmAuthService
+	private static hasStatusBarLoginTip = false
 
 	private storage: AuthStorage
 	private api: AuthApi
@@ -186,8 +187,6 @@ export class ZgsmAuthService {
 						loginState.state,
 					)
 
-					vscode.window.showInformationMessage("登录成功！")
-
 					// 触发登录成功事件
 					this.onLoginSuccess(loginState)
 					return
@@ -305,33 +304,15 @@ export class ZgsmAuthService {
 		try {
 			const tokens = await this.storage.getTokens()
 
-			// const loginState = await this.storage.getLoginState()
-
 			if (!tokens?.access_token || !tokens?.refresh_token) {
 				return false
 			}
-			// const machineId = this.getMachineId()
-			// // 尝试刷新token来验证登录状态
-			// // const newTokens = await this.refreshToken(tokens.refresh_token, vscode.env.machineId, tokens.state, false)
-			// const result = await retryWrapper(
-			// 	"checkLoginStatusOnStartup",
-			// 	() => this.api.getUserLoginState(tokens.state, tokens.access_token),
-			// 	() => 1000,
-			// 	2,
-			// )
 
-			// if (result.data?.status !== AuthStatus.LOGGED_IN) {
-			// 	console.error("请求返回缺少 refresh_token")
-
-			// 	return false
-			// }
 			const jwt = parseJwt(tokens?.refresh_token)
 
 			return jwt.exp * 1000 > Date.now()
 		} catch (error) {
 			console.error("启动时检查登录状态失败:", error)
-			// 清除无效的登录信息
-			// await this.logout()
 			return false
 		}
 	}
@@ -413,8 +394,7 @@ export class ZgsmAuthService {
 	 */
 	protected onLoginSuccess(tokens: AuthTokens): void {
 		this.updateUserInfo(tokens.refresh_token)
-		// 可以在这里添加登录成功后的逻辑
-		console.log("用户登录成功: ", this.userInfo.name)
+		vscode.window.showInformationMessage(`${this.userInfo.name}用户登录成功`)
 	}
 
 	updateUserInfo(token: string) {
@@ -433,10 +413,6 @@ export class ZgsmAuthService {
 		return this.userInfo
 	}
 
-	// 	this.clineProvider.setValue("zgsmRefreshToken", tokens.refresh_token)
-	// this.clineProvider.setValue("zgsmAccessToken", tokens.access_token)
-	// this.clineProvider.setValue("zgsmState", tokens.state)
-
 	/**
 	 * 登出回调
 	 */
@@ -450,6 +426,28 @@ export class ZgsmAuthService {
 			undefined,
 			1,
 		)
+	}
+
+	static async openStatusBarLoginTip(
+		opt: {
+			cb?: () => void
+			errorTitle?: string
+			btnText?: string
+		} = {},
+	) {
+		if (this.hasStatusBarLoginTip) return
+		this.hasStatusBarLoginTip = true
+		const reLoginText = opt?.btnText || "重新登录"
+		vscode.window.showWarningMessage(opt?.errorTitle || "用户认证失败", reLoginText).then(async (selection) => {
+			this.hasStatusBarLoginTip = false
+			if (selection !== reLoginText) {
+				opt?.cb?.()
+				return
+			}
+
+			opt?.cb?.()
+			ZgsmAuthService?.instance?.startLogin()
+		})
 	}
 
 	/**

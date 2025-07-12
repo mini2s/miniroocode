@@ -24,7 +24,7 @@ import { getModelParams } from "../transform/model-params"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import { AuthConfig } from "../../core/auth"
+import { AuthConfig, ZgsmAuthService } from "../../core/auth"
 import { getZgsmSelectedModelInfo } from "../../shared/getZgsmSelectedModelInfo"
 // TODO: Rename this to OpenAICompatibleHandler. Also, I think the
 // `OpenAINativeHandler` can subclass from this, since it's obviously
@@ -88,6 +88,15 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		const isAzureAiInference = this._isAzureAiInference(modelUrl)
 		const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
 		const ark = modelUrl.includes(".volces.com")
+
+		try {
+			const tokens = await ZgsmAuthService.getInstance().getTokens()
+			this.client.apiKey = tokens?.access_token || "not-provided"
+		} catch (error) {
+			console.warn(
+				`[createMessage] getting new tokens failed \n\nuse old tokens: ${this.client.apiKey} \n\n${error.message}`,
+			)
+		}
 
 		if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {
 			yield* this.handleO3FamilyMessage(modelId, systemPrompt, messages)

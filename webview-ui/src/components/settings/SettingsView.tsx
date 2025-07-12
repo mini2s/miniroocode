@@ -455,9 +455,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					<h3 className="text-vscode-foreground m-0">{t("settings:header.title")}</h3>
 				</div>
 				<div className="flex gap-2">
-					<div>isSettingValid: {`value ${isSettingValid}`}</div>
-					<div>isChangeDetected: {`value ${isChangeDetected}`}</div>
-					<div>errorMessage: {`value ${errorMessage}`}</div>
 					<StandardTooltip
 						content={
 							!isSettingValid

@@ -265,7 +265,6 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					const newState = message.state!
 					setState((prevState) => mergeExtensionState(prevState, newState))
 					setState((prevState) => mergeExtensionState(prevState, newState))
-					console.log("setShowWelcome")
 
 					setShowWelcome(!checkExistKey(newState.apiConfiguration))
 					setDidHydrateState(true)

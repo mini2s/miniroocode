@@ -60,7 +60,6 @@ export const ModelPicker = ({
 	errorMessage,
 }: ModelPickerProps) => {
 	const { t } = useAppTranslation()
-	console.log("ModelPicker")
 
 	const [open, setOpen] = useState(false)
 	const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)

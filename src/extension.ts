@@ -278,6 +278,7 @@ async function zgsmInitialize(context: vscode.ExtensionContext, provider: ClineP
 				})
 			// 开始token刷新定时器
 		} else {
+			ZgsmAuthService.openStatusBarLoginTip()
 			provider.log("插件启动时检测到登录状态：无效")
 		}
 	} catch (error) {

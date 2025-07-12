@@ -88,6 +88,7 @@ import { ApiMessage } from "../task-persistence/apiMessages"
 import { getMessagesSinceLastSummary, summarizeConversation } from "../condense"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { restoreTodoListForTask } from "../tools/updateTodoListTool"
+import { ZgsmAuthService } from "../auth"
 
 // Constants
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
@@ -1802,6 +1803,10 @@ export class Task extends EventEmitter<ClineEvents> {
 			yield firstChunk.value
 			this.isWaitingForFirstChunk = false
 		} catch (error) {
+			if (error.status === 401 && apiConfiguration?.apiProvider === "zgsm") {
+				ZgsmAuthService.openStatusBarLoginTip()
+			}
+
 			this.isWaitingForFirstChunk = false
 			// note that this api_req_failed ask is unique in that we only present this option if the api hasn't streamed any content yet (ie it fails on the first chunk due), as it would allow them to hit a retry button. However if the api failed mid-stream, it could be in any arbitrary state where some tools may have executed, so that error is handled differently and requires cancelling the task entirely.
 			if (autoApprovalEnabled && alwaysApproveResubmit) {
