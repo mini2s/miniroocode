@@ -6,6 +6,7 @@ import process from "node:process"
 import * as console from "node:console"
 
 import { copyPaths, copyWasms, copyLocales, setupLocaleWatcher } from "@roo-code/build"
+import { networkInterfacesCompatible } from "../scripts/network-interfaces-compatible.mjs"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -32,6 +33,9 @@ async function main() {
 			"process.env.NODE_ENV": production ? '"production"' : '"development"',
 			"process.env.ZGSM_BASE_URL": JSON.stringify(process.env.ZGSM_BASE_URL || ""),
 			"process.env.ZGSM_PUBLIC_KEY": JSON.stringify(process.env.ZGSM_PUBLIC_KEY || ""),
+		},
+		banner: {
+			js: networkInterfacesCompatible,
 		},
 	}
 

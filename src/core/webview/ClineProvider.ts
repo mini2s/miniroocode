@@ -1751,9 +1751,11 @@ export class ClineProvider
 
 	// logging
 
-	public log(message: string) {
-		this.outputChannel.appendLine(message)
-		console.log(message)
+	public log(message: string, type: "info" | "error" = "info", id: string = "") {
+		const prefix = [new Date().toLocaleString(), type, id].map((s) => (s ? `[${s}]` : "")).join(" ")
+		const logMessage = `${prefix}${message}`
+		this.outputChannel.appendLine(logMessage)
+		console.log(logMessage)
 	}
 
 	// integration tests

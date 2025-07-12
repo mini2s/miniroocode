@@ -4,6 +4,7 @@ import * as path from "path"
 import { fileURLToPath } from "url"
 
 import { getGitSha, copyPaths, copyLocales, copyWasms, generatePackageJson } from "@roo-code/build"
+import { networkInterfacesCompatible } from "../../scripts/network-interfaces-compatible.mjs"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -40,6 +41,9 @@ async function main() {
 			"process.env.PKG_VERSION": `"${overrideJson.version}"`,
 			"process.env.PKG_OUTPUT_CHANNEL": '"Roo-Code-Nightly"',
 			...(gitSha ? { "process.env.PKG_SHA": `"${gitSha}"` } : {}),
+		},
+		banner: {
+			js: networkInterfacesCompatible,
 		},
 	}
 
